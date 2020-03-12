@@ -14,6 +14,7 @@ uniform mat4 gbufferModelView;
 uniform mat4 gbufferProjectionInverse;
 uniform vec3 fogColor;
 uniform vec3 skyColor;
+uniform vec3 sunPosition;
 
 in vec2 texcoord;
 in vec4 color;
