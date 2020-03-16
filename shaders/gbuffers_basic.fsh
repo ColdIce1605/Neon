@@ -3,12 +3,18 @@
 #define fsh
 #include "/lib/Syntax.glsl"
 
-/* DRAWBUFFERS:0 */
+/* DRAWBUFFERS:012 */
 
 layout (location = 0) out vec4 albedo;
 
-in vec4 color;
+uniform sampler2D colortex0;
 
+in vec4 color;
+in vec4 texcoord;
+
+
+
+/*DRAWBUFFERS:012*/
 void main() {
-    albedo = color;
+    albedo = texture2D(colortex0, texcoord.st) * color;
 }

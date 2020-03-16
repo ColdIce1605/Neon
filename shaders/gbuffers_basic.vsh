@@ -4,9 +4,14 @@
 #include "/lib/Syntax.glsl"
 
 out vec4 color;
+out vec4 texcoord;
 
 void main() {
-    color = gl_Color;
+        texcoord      = gl_TextureMatrix[0] * gl_MultiTexCoord0;
 
-	gl_Position	= ftransform();
+	vec4 position = gl_Vertex;
+
+	gl_Position   = gl_ProjectionMatrix * (gl_ModelViewMatrix * position);
+
+        color         = gl_Color;
 }

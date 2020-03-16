@@ -1,11 +1,14 @@
 #version 420 compatibility
-#define composite1
+#define gbuffers_basic
 #define vsh
 #include "/lib/Syntax.glsl"
 
-out vec4 texcoord;
+out vec4 color;
+out vec2 uv;
 
 void main() {
+    color = gl_Color;
+    uv = gl_MultiTexCoord0.st;
+
     gl_Position = ftransform();
-    texcoord = gl_MultiTexCoord0;
 }

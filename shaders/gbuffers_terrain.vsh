@@ -8,6 +8,7 @@ uniform mat4 gbufferModelView;
 
 attribute vec4 at_tangent;
 
+out vec2 lmcoord;
 out vec2 texcoord;
 out vec4 color;
 
@@ -36,7 +37,7 @@ vec3 GetWorldSpacePosition() {
 void main() {
     texcoord = gl_MultiTexCoord0.st;
     color = gl_Color;
-    
+    lmcoord  = (gl_TextureMatrix[1] * gl_MultiTexCoord1).xy;
     vec3 worldPosition = GetWorldSpacePosition();
     tbnMatrix = CalculateTBN(worldPosition);
 

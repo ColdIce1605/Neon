@@ -8,17 +8,22 @@
 layout (location = 0) out vec4 albedo;
 layout (location = 1) out vec4 normal;
 
+uniform sampler2D lightmap;
 uniform sampler2D texture;
 uniform sampler2D normals;
 
+in vec2 lmcoord;
 in vec2 texcoord;
+
 in vec4 color;
 
 in mat3 tbnMatrix;
 
-vec3 calcNormals(vec2 coord) {
-#ifdef NORMAL_MAPS
-	vec3 normal = GetTexture(normals, coord).xyz;
+#define GetTexture(sampler, coord) texture2D(sampler, texcoord)
+
+vec3 calcNormals(vec2 texcoord) {
+#ifdef MC_NORMAL_MAP
+	vec3 normal = GetTexture(normals, texcoord).xyz;
 #else
 	vec3 normal = vec3(0.5, 0.5, 1.0);
 #endif
@@ -30,6 +35,7 @@ vec3 calcNormals(vec2 coord) {
 
 void main() {
     vec4 colorSample = texture2D(texture, texcoord) * color;
+    colorSample *= texture2D(lightmap, lmcoord); // remove * for whiteworld
     vec3 normalSample = calcNormals(texcoord);
 
 
