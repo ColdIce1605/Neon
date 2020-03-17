@@ -2,6 +2,8 @@
 #define composite0
 #define fsh
 #include "/lib/Syntax.glsl"
+#include "/lib/Utility.glsl"
+#include "/lib/Settings.glsl"
 
 
 /* DRAWBUFFERS:0 */

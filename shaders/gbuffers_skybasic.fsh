@@ -1,7 +1,9 @@
 #version 420 compatibility
-#define gbuffers_basic
+#define gbuffers_skybasic
 #define fsh
 #include "/lib/Syntax.glsl"
+#include "/lib/Utility.glsl"
+#include "/lib/Settings.glsl"
 
 // Sky options
 #define RAYLEIGH_BRIGHTNESS         3.3

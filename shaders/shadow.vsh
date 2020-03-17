@@ -11,7 +11,7 @@ in vec4 mc_Entity;
 out vec4 texcoord;
 out vec4 color;
 
-varying float isTransparent;
+out float isTransparent;
 
 float getIsTransparent(in float materialId) {
     if(materialId == 160.0) {

@@ -1,5 +1,5 @@
 #version 420 compatibility
-#define gbuffers_basic
+#define gbuffers_skytextured
 #define vsh
 #include "/lib/Syntax.glsl"
 

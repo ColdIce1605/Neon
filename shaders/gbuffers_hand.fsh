@@ -1,7 +1,9 @@
 #version 420 compatibility
-#define gbuffers_basic
+#define gbuffers_hand
 #define fsh
 #include "/lib/Syntax.glsl"
+#include "/lib/Utility.glsl"
+#include "/lib/Settings.glsl"
 
 uniform sampler2D lightmap;
 uniform sampler2D texture;

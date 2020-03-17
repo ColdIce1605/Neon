@@ -1,8 +1,10 @@
 #version 420 compatibility
-#define gbuffers_basic
+#define gbuffers_textured
 #define fsh
 #define ShaderStage -1
 #include "/lib/Syntax.glsl"
+#include "/lib/Utility.glsl"
+#include "/lib/Settings.glsl"
 
 /* DRAWBUFFERS:0 */
 
