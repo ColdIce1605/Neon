@@ -11,7 +11,11 @@
 
 uniform sampler2D colortex0;
 
+uniform float viewWidth;
+uniform float viewHeight;
+
 in vec2 texcoord;
+in vec2 uv;
 in vec4 color;
 
 vec3 getTonemap(in vec3 color) {  
@@ -31,13 +35,21 @@ vec3 vignette(vec3 color) {
     return color * (1.0 - dist);
 }
 
+vec3 ditherScreen(inout vec3 color) {
+    vec3 lestynRGB = vec3(dot(vec2(171.0, 231.0), gl_FragCoord.xy));
+         lestynRGB = fract(lestynRGB.rgb / vec3(103.0, 71.0, 97.0));
+
+    return color += lestynRGB.rgb / 255.0;
+}
 void main() {
 
     vec4 color = texture2D(colortex0, texcoord.st) * color;
     color.rgb = getTonemap(color.rgb);
 
     color.rgb = vignette(color.rgb);
+    vec3 ditheredColor = ditherScreen(color.rgb);
+    vec3 finalColor = ditheredColor;
 
     /*DRAWBUFFERS:0*/
-    gl_FragData[0] = color;
+    gl_FragData[0] = vec4(finalColor, 1.0);
 }

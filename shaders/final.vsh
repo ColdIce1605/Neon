@@ -4,10 +4,13 @@
 #include "/lib/Syntax.glsl"
 
 out vec2 texcoord;
+out vec2 uv;
+
 out vec4 color;
 
 void main() {
     gl_Position	= ftransform();
     texcoord = gl_MultiTexCoord0.st;
+    uv = gl_MultiTexCoord0.st;
 	color = gl_Color;
 }

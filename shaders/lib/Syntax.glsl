@@ -28,3 +28,6 @@
 #define cvec2  const vec2
 #define cvec3  const vec3
 #define cvec4  const vec4
+
+#define timeNight   timeVector.y
+#define saturate(x) clamp(x, 0.0, 1.0)

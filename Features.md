@@ -39,6 +39,7 @@ shading,
 
 filtering pass - Reflections, CLOUDS
 generation of bloom and aperature shape
+DRAGON's Bloom thanks dethraid.
 
 ### Composite 5
 
