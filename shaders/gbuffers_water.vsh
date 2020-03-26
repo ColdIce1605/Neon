@@ -9,6 +9,10 @@ uniform mat4 gbufferModelViewInverse;
 
 uniform int worldTime;
 
+out float isWater;
+out float isIce;
+out float isTransparent;
+
 out vec2 lmcoord;
 out vec2 texcoord;
 
@@ -21,6 +25,22 @@ out vec4 color;
 #define ITERATIONS_NORMAL 48
 #define WATER_DEPTH 2.1
 #define Time (worldTime / 1.0)
+
+float getIsTransparent(in float materialId) {
+    if (materialId == 160.0) { // stained glass pane
+        return 1.0;
+    }
+    if (materialId == 95.0) { //stained glass
+        return 1.0;
+    }
+    if (materialId == 79.0) { //ice
+        return 1.0;
+    }
+    if (materialId == 8.0 || materialId == 9.0) { //water 
+        return 1.0;
+    }
+    return 0.0;
+}
 
 // returns vec2 with wave height in X and its derivative in Y
 vec2 wavedx(vec2 position, vec2 direction, float speed, float frequency, float timeshift) {
@@ -51,6 +71,24 @@ float getwaves(vec2 position, int iterations) {
 }
 
 void main() {
+    if (mc_Entity.x == 8 || mc_Entity.x == 9) {
+        isIce = 0;
+        isWater = 1;
+        //normal = mat3(gbufferModelViewInverse) * normal;
+        normal.y -= getwaves(ftransform().xz, 48);
+        //gl_Position = gl_ProjectionMatrix * gbufferModelView * position;
+    }
+    else if (mc_Entity.x == 79.0) {
+        isIce = 1;
+        isWater = 0;
+    }
+    else {
+        isIce = 0;
+        isWater = 0;
+    }
+    isTransparent = getIsTransparent(mc_Entity.x);
+}
+
 	gl_Position = ftransform();
 	texcoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
 	lmcoord  = (gl_TextureMatrix[1] * gl_MultiTexCoord1).xy;
