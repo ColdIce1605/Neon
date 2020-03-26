@@ -2,70 +2,186 @@
 #define gbuffers_skybasic
 #define fsh
 #include "/lib/Syntax.glsl"
-#include "/lib/Utility.glsl"
+#include "/lib/framebuffer.glsl"
 #include "/lib/Settings.glsl"
 
-// Sky options
-#define RAYLEIGH_BRIGHTNESS         3.3
-#define MIE_BRIGHTNESS              0.1
-#define MIE_DISTRIBUTION            0.63
-#define STEP_COUNT                  15.0
-#define SCATTER_STRENGTH            0.028
-#define RAYLEIGH_STRENGTH           0.139
-#define MIE_STRENGTH                0.0264
-#define RAYLEIGH_COLLECTION_POWER	0.81
-#define MIE_COLLECTION_POWER        0.39
-
-#define SUNSPOT_BRIGHTNESS          500
-#define MOONSPOT_BRIGHTNESS         25
-
-#define SKY_SATURATION              1.5
-
-#define SURFACE_HEIGHT              0.98
-
-#define PI 3.14159
+#define PI 3.141592
+#define iSteps 16
+#define jSteps 8
 
 /* DRAWBUFFERS:0 */
 
 layout (location = 0) out vec4 albedo;
 
-uniform sampler2D texture;
-uniform float viewHeight;
-uniform float viewWidth;
-uniform mat4 gbufferModelView;
-uniform mat4 gbufferModelViewInverse;
-uniform mat4 gbufferProjectionInverse;
-uniform vec3 fogColor;
-uniform vec3 skyColor;
 uniform vec3 sunPosition;
 uniform vec3 moonPosition;
-uniform sampler2D depthtex0;                    
-uniform int worldTime;
 
-in vec2 uv;
-in vec2 texcoord;
-in vec4 color;
-in vec4 starData; //rgb = star color, a = flag for weather or not this pixel is a star.
+uniform float viewWidth;
+uniform float viewHeight;
 
-float fogify(float x, float w) {
-	return w / (x * x + w);
+uniform mat4 gbufferProjectionInverse;
+uniform mat4 gbufferModelViewInverse;
+
+#define PI 3.141592
+#define iSteps 16
+#define jSteps 8
+
+uniform vec3 cameraPosition;
+
+in float isNight;
+
+#include "/lib/getSpace.glsl"
+
+// atmospheric scattering shader by wwwtyro https://github.com/wwwtyro/glsl-atmosphere 
+
+vec2 rsi(vec3 r0, vec3 rd, float sr) {
+    // ray-sphere intersection that assumes
+    // the sphere is centered at the origin.
+    // No intersection when result.x > result.y
+    float a = dot(rd, rd);
+    float b = 2.0 * dot(rd, r0);
+    float c = dot(r0, r0) - (sr * sr);
+    float d = (b*b) - 4.0*a*c;
+    if (d < 0.0) return vec2(1e5,-1e5);
+    return vec2(
+        (-b - sqrt(d))/(2.0*a),
+        (-b + sqrt(d))/(2.0*a)
+    );
 }
 
-vec3 calcSkyColor(vec3 pos) {
-	float upDot = dot(pos, gbufferModelView[1].xyz); //not much, what's up with you?
-	return mix(skyColor, fogColor, fogify(max(upDot, 0.0), 0.25));
+vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAtmos, vec3 kRlh, float kMie, float shRlh, float shMie, float g) {
+    // Normalize the sun and view directions.
+    pSun = normalize(pSun);
+    r = normalize(r);
+
+    // Calculate the step size of the primary ray.
+    vec2 p = rsi(r0, r, rAtmos);
+    if (p.x > p.y) return vec3(0,0,0);
+    p.y = min(p.y, rsi(r0, r, rPlanet).x);
+    float iStepSize = (p.y - p.x) / float(iSteps);
+
+    // Initialize the primary ray time.
+    float iTime = 0.0;
+
+    // Initialize accumulators for Rayleigh and Mie scattering.
+    vec3 totalRlh = vec3(0,0,0);
+    vec3 totalMie = vec3(0,0,0);
+
+    // Initialize optical depth accumulators for the primary ray.
+    float iOdRlh = 0.0;
+    float iOdMie = 0.0;
+
+    // Calculate the Rayleigh and Mie phases.
+    float mu = dot(r, pSun);
+    float mumu = mu * mu;
+    float gg = g * g;
+    float pRlh = 3.0 / (16.0 * PI) * (1.0 + mumu);
+    float pMie = 3.0 / (8.0 * PI) * ((1.0 - gg) * (mumu + 1.0)) / (pow(1.0 + gg - 2.0 * mu * g, 1.5) * (2.0 + gg));
+
+    // Sample the primary ray.
+    for (int i = 0; i < iSteps; i++) {
+
+        // Calculate the primary ray sample position.
+        vec3 iPos = r0 + r * (iTime + iStepSize * 0.5);
+
+        // Calculate the height of the sample.
+        float iHeight = length(iPos) - rPlanet;
+
+        // Calculate the optical depth of the Rayleigh and Mie scattering for this step.
+        float odStepRlh = exp(-iHeight / shRlh) * iStepSize;
+        float odStepMie = exp(-iHeight / shMie) * iStepSize;
+
+        // Accumulate optical depth.
+        iOdRlh += odStepRlh;
+        iOdMie += odStepMie;
+
+        // Calculate the step size of the secondary ray.
+        float jStepSize = rsi(iPos, pSun, rAtmos).y / float(jSteps);
+
+        // Initialize the secondary ray time.
+        float jTime = 0.0;
+
+        // Initialize optical depth accumulators for the secondary ray.
+        float jOdRlh = 0.0;
+        float jOdMie = 0.0;
+
+        // Sample the secondary ray.
+        for (int j = 0; j < jSteps; j++) {
+
+            // Calculate the secondary ray sample position.
+            vec3 jPos = iPos + pSun * (jTime + jStepSize * 0.5);
+
+            // Calculate the height of the sample.
+            float jHeight = length(jPos) - rPlanet;
+
+            // Accumulate the optical depth.
+            jOdRlh += exp(-jHeight / shRlh) * jStepSize;
+            jOdMie += exp(-jHeight / shMie) * jStepSize;
+
+            // Increment the secondary ray time.
+            jTime += jStepSize;
+        }
+
+        // Calculate attenuation.
+        vec3 attn = exp(-(kMie * (iOdMie + jOdMie) + kRlh * (iOdRlh + jOdRlh)));
+
+        // Accumulate scattering.
+        totalRlh += odStepRlh * attn;
+        totalMie += odStepMie * attn;
+
+        // Increment the primary ray time.
+        iTime += iStepSize;
+
+    }
+
+    // Calculate and return the final color.
+    return iSun * (pRlh * kRlh * totalRlh + pMie * kMie * totalMie);
+}
+
+vec3 GetSkyColor(vec3 worldPos, vec3 sunPos, vec3 moonPos){
+vec3 color;
+if (isNight == 0) {
+      color = atmosphere(
+        normalize(worldPos),           // normalized ray direction
+        vec3(0,6372e3,0),               // ray origin
+        sunPos,                        // position of the sun
+        22.0,                           // intensity of the sun
+        6371e3,                         // radius of the planet in meters
+        6471e3,                         // radius of the atmosphere in meters
+        vec3(5.5e-6, 13.0e-6, 22.4e-6), // Rayleigh scattering coefficient
+        21e-6,                          // Mie scattering coefficient
+        8e3,                            // Rayleigh scale height
+        1.2e3,                  // Mie scale height
+        0.758                           // Mie preferred scattering direction
+    );
+} else {
+      color = atmosphere(
+        normalize(worldPos),            // normalized ray direction
+        vec3(0,6372e3,0),               // ray origin
+        moonPos,                        // position of the moon
+        01.5714,                        // intensity of the moon
+        6371e3,                         // radius of the planet in meters
+        6471e3,                         // radius of the atmosphere in meters
+        vec3(5.5e-6, 13.0e-6, 22.4e-6), // Rayleigh scattering coefficient
+        21e-6,                          // Mie scattering coefficient
+        8e3,                            // Rayleigh scale height
+        1.2e3,                          // Mie scale height
+        0.758                           // Mie preferred scattering direction
+    );
+}
+    
+    // Apply exposure.
+    color = 1.0 - exp(-2.5 * color);
+
+    return color;
 }
 
 void main() {
-    vec3 color;
-    	if (starData.a > 0.5) {
-		color = starData.rgb;
-	}
-	else {
-		vec4 pos = vec4(gl_FragCoord.xy / vec2(viewWidth, viewHeight) * 2.0 - 1.0, 1.0, 1.0);
-		pos = gbufferProjectionInverse * pos;
-		color = calcSkyColor(normalize(pos.xyz));
-	}
-
+        vec4 screenPos = vec4(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z, 1.0);
+	vec4 viewPos = gbufferProjectionInverse * (screenPos * 2.0 - 1.0);
+    viewPos /= viewPos.w;
+    
+	vec3 color = GetSkyColor(mat3(gbufferModelViewInverse) * viewPos.xyz, mat3(gbufferModelViewInverse) * sunPosition, mat3(gbufferModelViewInverse) * moonPosition);
+    
     albedo = vec4(color, 1.0);
 }

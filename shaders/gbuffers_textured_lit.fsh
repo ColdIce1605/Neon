@@ -2,7 +2,7 @@
 #define gbuffers_textured_lit
 #define fsh
 #include "/lib/Syntax.glsl"
-#include "/lib/Utility.glsl"
+#include "/lib/framebuffer.glsl"
 #include "/lib/Settings.glsl"
 
 uniform sampler2D lightmap;

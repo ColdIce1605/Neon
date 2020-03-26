@@ -2,7 +2,7 @@
 #define composite0
 #define fsh
 #include "/lib/Syntax.glsl"
-#include "/lib/Utility.glsl"
+#include "/lib/framebuffer.glsl"
 #include "/lib/Settings.glsl"
 
 
@@ -16,5 +16,4 @@ layout (location = 0) out vec4 albedo;
 
 void main() {
     albedo = texture(colortex0, texcoord);
-    
 }

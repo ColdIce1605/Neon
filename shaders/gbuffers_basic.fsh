@@ -2,13 +2,13 @@
 #define gbuffers_basic
 #define fsh
 #include "/lib/Syntax.glsl"
-#include "/lib/Utility.glsl"
+#include "/lib/framebuffer.glsl"
 #include "/lib/Settings.glsl"
 
-/* DRAWBUFFERS:012 */
+/* DRAWBUFFERS:02 */
 
 layout (location = 0) out vec4 albedo;
-layout (location = 1) out vec4 normal_basic;
+layout (location = 2) out vec4 normal_basic;
 
 uniform sampler2D colortex0;
 

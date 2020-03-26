@@ -2,20 +2,18 @@
 #define composite1
 #define fsh
 #include "/lib/Syntax.glsl"
-#include "/lib/Utility.glsl"
+#include "/lib/framebuffer.glsl"
 #include "/lib/Settings.glsl"
 
 #include "/lib/poisson.glsl"
 
-const int shadowMapResolution = 2048; //[1024 2048 4096 8192]
-const float shadowDistance = 128; //[128 256 512 1024]
-const float shadowMapBias = 0.85;
-const int noiseTextureResolution = 256; 
-const float sunPathRotation = -20;
+layout (location = 0) out vec4 albedo;
+layout (location = 1) out vec4 depth_composite1;
+
 #define SHADOWMAP_BIAS 0.85
 
 uniform sampler2D colortex0;
-uniform sampler2D colortex1;
+uniform sampler2D colortex2;
 uniform sampler2D shadowtex0; 
 uniform sampler2D shadowcolor0; //only one
 uniform sampler2D depthtex1; //samples depth
@@ -40,7 +38,7 @@ uniform float viewHeight;
 
 in vec4 texcoord;
 
-float depth = 0.5;
+
 
 float timefract = worldTime; //using another name for worldtime
 
@@ -50,21 +48,7 @@ float TimeNoon     = ((clamp(timefract, 0.0, 4000.0)) / 4000.0) - ((clamp(timefr
 float TimeSunset   = ((clamp(timefract, 8000.0, 12000.0) - 8000.0) / 4000.0) - ((clamp(timefract, 12000.0, 12750.0) - 12000.0) / 750.0);
 float TimeMidnight = ((clamp(timefract, 12000.0, 12750.0) - 12000.0) / 750.0) - ((clamp(timefract, 23000.0, 24000.0) - 23000.0) / 1000.0);
 
-vec4 getCameraPosition(in vec2 coord) {
-    float getdepth = depth;
-	    vec4 positionNdcSpace = vec4(coord.s * 2.0 - 1.0, coord.t * 2.0 - 1.0, 2.0 * getdepth - 1.0, 1.0);
-        vec4 positionCameraSpace = gbufferProjectionInverse * positionNdcSpace;
-
-	return positionCameraSpace / positionCameraSpace.w;
-}  //get CameraSpace
-
-vec4 getWorldSpacePosition(in vec2 coord) {
-	vec4 cameraPos = getCameraPosition(coord);
-	vec4 worldPos = gbufferModelViewInverse * cameraPos;
-	worldPos.xyz += cameraPosition;
-
-	return worldPos;
-}// get worldSpace
+#include "/lib/getSpace.glsl"
 
 vec4 getDistortFactor(in vec4 shadowPos) {
     vec4 multipliedPos = shadowPos * shadowPos;
@@ -130,7 +114,7 @@ vec3 getShadows(in vec2 coord) {
 vec3 calculateLighting(in vec3 color) {
     vec3 sunLight = getShadows(texcoord.st);
     vec3 ambientLight = (vec3(0.75) * TimeSunrise + (vec3(0.5, 0.7, 1.0) * 0.5) * TimeNoon + vec3(0.75) * TimeSunset + vec3(0.55) * TimeMidnight);
-    vec3 normalMap = texture2D(colortex1, texcoord.st).xyz * 2.0 - 1.0;
+    vec3 normalMap = texture2D(colortex2, texcoord.st).xyz * 2.0 - 1.0;
 
     float Diffuse = max(dot(normalMap, normalize(shadowLightPosition)), 0.0);
 
@@ -146,6 +130,6 @@ void main() {
 
     if (isTerrain) color = calculateLighting(color);
 
-    gl_FragData[0] = vec4(color, 1.0); //fragdatas are vec4s must have , 1.0 to do vec3s
-    gl_FragData[1] = vec4(depth); //depth come out
+    albedo = vec4(color, 1.0); //fragdatas are vec4s must have , 1.0 to do vec3s
+    depth_composite1 = vec4(depth); //depth come out
 }

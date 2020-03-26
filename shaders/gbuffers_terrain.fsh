@@ -2,13 +2,13 @@
 #define gbuffers_terrain
 #define fsh
 #include "/lib/Syntax.glsl"
-#include "/lib/Utility.glsl"
+#include "/lib/framebuffer.glsl"
 #include "/lib/Settings.glsl"
 
 /* DRAWBUFFERS:01 */
 
 layout (location = 0) out vec4 albedo;
-layout (location = 1) out vec4 normal;
+layout (location = 2) out vec4 normal;
 
 uniform sampler2D lightmap;
 uniform sampler2D texture;

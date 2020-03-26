@@ -1,3 +1,5 @@
+#include "/lib/Utility/encoding.glsl"
+
   #define cRCP(type, name) const type name##RCP = 1.0 / name
   #define cin(type) const type
   #define rcp(x) ( 1.0 / x )

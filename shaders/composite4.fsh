@@ -6,7 +6,7 @@
 #define composite4
 #define fsh
 #include "/lib/Syntax.glsl"
-#include "/lib/Utility.glsl"
+#include "/lib/framebuffer.glsl"
 #include "/lib/Settings.glsl"
 
 /* DRAWBUFFERS:02 */
@@ -24,60 +24,24 @@ in vec2 texcoord;
 in vec2 screenCoord;
 
 layout (location = 0) out vec4 albedo;
-layout (location = 2) out vec4 bloom_pass1;
+/*
+uniform bool horizontal;
+uniform float weight[5] = float[] (0.227027, 0.1945946, 0.1216216, 0.054054, 0.016216);
 
-vec3 getBloomTile(in vec2 screenCoord, cin(int) lod, cin(vec2) offset) {
- 
-      const int width     = 7;
-      const int samples   = width * width;
+//layout (location = 0) out vec4 albedo;
+//layout (location = 3) out vec4 bloom_pass1;
 
-      float scale = pow(2.0, lod);
-
-      float a = pow(0.5, 0.5) * 20.0;
-
-      vec3 tile = vec3(0.0);
-
-      vec2 pixelSize = rcp(viewWidth) * vec2(1.0, aspectRatio);
-
-      vec2 coord = screenCoord - offset;
-      vec2 scaledCoord = coord * scale;
-
-      if(scaledCoord.x > -0.1 && scaledCoord.y > -0.1 && scaledCoord.x < 1.1 && scaledCoord.y < 1.1) {
-        vec2 sampleCoord = vec2(0.0);
-        float weight = 0.0;
-
-        for(int i = 0; i < samples; ++i) {
-          sampleCoord = to2D(i, samples);
-
-          weight = sqrt(1.0 - length(sampleCoord - vec2(3.0)) * 0.25) * a;
-
-          if(weight <= 0.0) 
-              continue;
-
-          tile += texture2DLod(colortex0, (pixelSize * (sampleCoord - vec2(2.5, 3.0)) + coord) * scale, lod).rgb * weight;
-        }
-      }
-
-      return tile;
+void bloom() {
+float brightness = dot(colortex0.rgb, vec3(0.2126, 0.7152, 0.0722));
+    if(brightness > 1.0)
+        BrightColor = vec4(colortex0.rgb, 1.0);
+    else
+        BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
 }
-
-vec3 computeBloomTiles(vec2 screenCoord) {
-
-      vec3 tiles = vec3(0.0);
-
-      tiles += getBloomTile(screenCoord, 2, vec2(0.0, 0.0));
-      tiles += getBloomTile(screenCoord, 3, vec2(0.3, 0.0));
-      tiles += getBloomTile(screenCoord, 4, vec2(0.0, 0.3));
-      tiles += getBloomTile(screenCoord, 5, vec2(0.1, 0.3));
-      tiles += getBloomTile(screenCoord, 6, vec2(0.2, 0.3));
-      tiles += getBloomTile(screenCoord, 7, vec2(0.3, 0.3));
-
-      return tiles;
-}
-
+*/
 void main() {
     vec3 color = texture2D(colortex0, texcoord.st).rgb;
     albedo = vec4(color, 1.0);
 
-    bloom_pass1 = vec4(computeBloomTiles(screenCoord), 1.0);
+    //bloom_pass1 = vec4(bloom(), 1.0);
 }

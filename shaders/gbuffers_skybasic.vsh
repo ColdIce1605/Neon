@@ -3,16 +3,25 @@
 #define vsh
 #include "/lib/Syntax.glsl"
 
-out vec2 uv;
-out vec2 texcoord;
-out vec4 color;
+uniform float timeAngle;
+
+uniform vec3 sunPosition;
+uniform vec3 moonPosition;
+
+uniform mat4 gbufferModelView;
+uniform int worldTime;
+
 out vec4 starData; //rgb = star color, a = flag for weather or not this pixel is a star.
+out float isNight;
 
 void main() {
-    texcoord = gl_MultiTexCoord0.st;
-    color = gl_Color;
-    uv = gl_MultiTexCoord0.st;
 
-	gl_Position	= ftransform();
-    starData = vec4(gl_Color.rgb, float(gl_Color.r == gl_Color.g && gl_Color.g == gl_Color.b && gl_Color.r > 0.0));
+    if (worldTime < 12700 || worldTime > 23250) {
+        isNight = 0;
+    } 
+    else {
+        isNight = 1;
+    }
+
+	gl_Position = ftransform();
 }
