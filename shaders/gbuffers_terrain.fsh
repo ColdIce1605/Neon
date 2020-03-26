@@ -39,8 +39,9 @@ void main() {
     vec4 colorSample = texture2D(texture, texcoord) * color;
     colorSample *= texture2D(lightmap, lmcoord); // remove * for whiteworld
     vec3 normalSample = calcNormals(texcoord);
-
-
+    #ifdef WHITEWORLD
+        colorSample = vec4(1.0, 1.0, 1.0, 1.0);
+    #endif
     albedo = vec4((colorSample.rgb), colorSample.a);
     normal = vec4(normalSample, 1.0);
 }

@@ -9,3 +9,5 @@ const float shadowDistance = 128; //[128 256 512 1024]
 const float shadowMapBias = 0.85;
 const int noiseTextureResolution = 256; 
 const float sunPathRotation = -20;
+
+//#define WHITEWORLD

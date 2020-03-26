@@ -3,7 +3,7 @@
 #define vsh
 #include "/lib/Syntax.glsl"
 
-in vec4 mc_Enity;
+in vec4 mc_Entity;
 
 uniform mat4 gbufferModelViewInverse;
 
@@ -71,6 +71,14 @@ float getwaves(vec2 position, int iterations) {
 }
 
 void main() {
+    
+	gl_Position = ftransform();
+	texcoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
+	lmcoord  = (gl_TextureMatrix[1] * gl_MultiTexCoord1).xy;
+	position = gbufferModelViewInverse * gl_ModelViewMatrix * gl_Vertex;
+	normal = normalize(gl_NormalMatrix * gl_Normal);
+	color = gl_Color;
+
     if (mc_Entity.x == 8 || mc_Entity.x == 9) {
         isIce = 0;
         isWater = 1;
@@ -87,12 +95,4 @@ void main() {
         isWater = 0;
     }
     isTransparent = getIsTransparent(mc_Entity.x);
-}
-
-	gl_Position = ftransform();
-	texcoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
-	lmcoord  = (gl_TextureMatrix[1] * gl_MultiTexCoord1).xy;
-	position = gbufferModelViewInverse * gl_ModelViewMatrix * gl_Vertex;
-	normal = normalize(gl_NormalMatrix * gl_Normal);
-	color = gl_Color;
 }
