@@ -11,7 +11,7 @@
 #define REFLECTION_SAMPLES 1 // [0 1 2 4 8 16]
 #define REFLECTION_BOUNCES 1 // [1 2]
 
-//--// Whatever I end up naming this //------------------------------------------------------------------//
+//--// Materials //--------------------------------------------------------------------------------------//
 
 #include "/lib/materials.glsl"
 
@@ -369,7 +369,7 @@ void main() {
 	}
 	#endif
 
-	composite += surface.mat.emission * ILLUMINANCE_BLOCK;
+	composite += surface.mat.emission * LUMINANCE_BLOCK;
 
 	if (waterMask) {
 		composite = calculateWaterShading(surface);

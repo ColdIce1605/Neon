@@ -73,6 +73,15 @@ void tonemap(inout vec3 color) {
 	color /= color + 1.0;
 	color  = pow(color, vec3(0.5 / GAMMA));
 }
+
+void vignette(inout vec3 color) {
+    float dist = distance(fragCoord, vec2(0.5)) * Vignette_Strength;
+
+    dist = pow(dist / 2.0, 1.1);
+
+    color * (1.0 - dist);
+}
+
 void dither(inout vec3 color) {
 	const mat4 pattern = mat4(
 		 1,  9,  3, 11,
@@ -92,6 +101,8 @@ void main() {
 	#ifdef BLOOM
 	applyBloom(finalColor);
 	#endif
+	
+	vignette(finalColor);
 
 	lowLightAdapt(finalColor);
 

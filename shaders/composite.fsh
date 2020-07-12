@@ -10,8 +10,8 @@
 
 //--// Misc
 
-const float sunPathRotation = -40.0;
-const int noiseTextureResolution = 64;
+const float sunPathRotation = -30.0;
+const int noiseTextureResolution = 128;
 
 //--// Shadows
 

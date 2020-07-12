@@ -1,5 +1,5 @@
 // Sun luminance is close to the exact value that will result in an illuminance of 128000 lux with what I have set for the apparent size of the sun.
-// I might have gottent the luminance wrong tough.
+// I might have gotten the luminance wrong tough.
 #define   LUMINANCE_SUN  6.61e6
 #define ILLUMINANCE_SUN  128e3
 
@@ -14,4 +14,4 @@
 #define ILLUMINANCE_SKY  7e3
 
 // This value needs a lot of tuning. It also should really be LUMINANCE_BLOCK, but I'll change that later.
-#define ILLUMINANCE_BLOCK 50
+#define LUMINANCE_BLOCK 50
