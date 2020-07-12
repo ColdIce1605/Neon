@@ -1,4 +1,4 @@
 #define HSSRS
 
-#define HSSRS_RAY_STEPS  16   // [16 24 32 48 64]
-#define HSSRS_RAY_LENGTH 0.25 // [0.25 0.50]
+#define HSSRS_RAY_STEPS  16   // [16 24 32 48 64 128 256]
+#define HSSRS_RAY_LENGTH 0.25 // [0.125 0.25 0.50]
