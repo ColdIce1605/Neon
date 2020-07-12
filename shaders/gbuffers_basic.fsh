@@ -1,24 +1,20 @@
-#version 420 compatibility
-#define gbuffers_basic
-#define fsh
-#include "/lib/Syntax.glsl"
-#include "/lib/framebuffer.glsl"
-#include "/lib/Settings.glsl"
+#version 420
 
-/* DRAWBUFFERS:02 */
+//--// Outputs //----------------------------------------------------------------------------------------//
 
-layout (location = 0) out vec4 albedo;
-layout (location = 2) out vec4 normal_basic;
+/* DRAWBUFFERS:0 */
 
-uniform sampler2D colortex0;
+layout (location = 0) out vec4 packedMaterial;
+
+//--// Inputs //-----------------------------------------------------------------------------------------//
 
 in vec4 color;
-in vec4 texcoord;
 
-in vec3 normal;
+//--// Functions //--------------------------------------------------------------------------------------//
 
-/*DRAWBUFFERS:012*/
 void main() {
-    albedo = texture2D(colortex0, texcoord.st) * color;
-    normal_basic = vec4(normal * 0.5 + 0.5, 1.0);
+	packedMaterial.r = uintBitsToFloat(packUnorm4x8(color));
+	packedMaterial.g = uintBitsToFloat(0xff000000);
+	packedMaterial.b = uintBitsToFloat(0xff000000);
+	packedMaterial.a = 1.0;
 }

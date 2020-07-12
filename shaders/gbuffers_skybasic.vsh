@@ -1,27 +1,15 @@
 #version 420 compatibility
-#define gbuffers_skybasic
-#define vsh
-#include "/lib/Syntax.glsl"
 
-uniform float timeAngle;
+//--// Inputs //-----------------------------------------------------------------------------------------//
 
-uniform vec3 sunPosition;
-uniform vec3 moonPosition;
+layout (location = 0) in vec4 position;
 
-uniform mat4 gbufferModelView;
-uniform int worldTime;
-
-out vec4 starData; //rgb = star color, a = flag for weather or not this pixel is a star.
-out float isNight;
+//--// Functions //--------------------------------------------------------------------------------------//
 
 void main() {
+	float posLen = length(position.xyz);
 
-    if (worldTime < 12700 || worldTime > 23250) {
-        isNight = 0;
-    } 
-    else {
-        isNight = 1;
-    }
-
-	gl_Position = ftransform();
+	// Only draw stars
+	if (posLen > 100.0 && posLen < 100.1) gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * position;
+	else gl_Position = vec4(1.0);
 }

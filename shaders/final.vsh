@@ -1,16 +1,27 @@
-#version 420 compatibility
-#define final
-#define vsh
-#include "/lib/Syntax.glsl"
+#version 420
 
-out vec2 texcoord;
-out vec2 uv;
+//--// Outputs //----------------------------------------------------------------------------------------//
 
-out vec4 color;
+out vec2 fragCoord;
+
+out float avglum;
+
+//--// Inputs //-----------------------------------------------------------------------------------------//
+
+layout (location = 0) in vec2 vertexPosition;
+layout (location = 8) in vec2 vertexUV;
+
+//--// Uniforms //---------------------------------------------------------------------------------------//
+
+uniform sampler2D colortex4;
+
+//--// Functions //--------------------------------------------------------------------------------------//
 
 void main() {
-    gl_Position	= ftransform();
-    texcoord = gl_MultiTexCoord0.st;
-    uv = gl_MultiTexCoord0.st;
-	color = gl_Color;
+	gl_Position.xy = vertexPosition * 2.0 - 1.0;
+	gl_Position.zw = vec2(1.0);
+
+	fragCoord = vertexUV;
+
+	avglum = dot(textureLod(colortex4, vec2(0.5), 100).rgb, vec3(1.0 / 3.0));
 }

@@ -1,11 +1,16 @@
-#version 420 compatibility
-#define composite3
-#define vsh
-#include "/lib/Syntax.glsl"
+#version 420
 
-out vec2 texcoord;
+//--// Outputs //----------------------------------------------------------------------------------------//
+
+out vec2 fragCoord;
+
+//--// Inputs //-----------------------------------------------------------------------------------------//
+
+layout (location = 0) in vec4 vertexPosition;
+
+//--// Functions //--------------------------------------------------------------------------------------//
 
 void main() {
-    gl_Position	= ftransform();
-    texcoord = gl_MultiTexCoord0.st;
+	gl_Position = vertexPosition * 2.0 - 1.0;
+	fragCoord = vertexPosition.xy;
 }

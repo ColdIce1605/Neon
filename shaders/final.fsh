@@ -1,55 +1,102 @@
-#version 420 compatibility
-#define final
-#define fsh
-#include "/lib/Syntax.glsl"
-#include "/lib/framebuffer.glsl"
-#include "/lib/Settings.glsl"
+#version 420
 
-#define Saturation 1.0 //[0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0]
-#define Vibrance 1.5 //[0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0]
-#define Vignette_Strength 1.6 //[0.0 1.0 1.1 1.2 1.3 1.4 1.5 1.6 1.7 1.8 1.9 2.0 2.1 2.2 2.3 2.4 2.5]
+//--// Configuration //----------------------------------------------------------------------------------//
 
-uniform sampler2D colortex0;
+#include "/cfg/global.scfg"
 
-uniform float viewWidth;
-uniform float viewHeight;
+#define FINAL
 
-in vec2 texcoord;
-in vec2 uv;
-in vec4 color;
+#include "/cfg/bloom.scfg"
 
-vec3 getTonemap(in vec3 color) {  
-  color = pow(color, vec3(1.0/1.1)); //Gamma Correction
-  
-  float getrgb = (color.r + color.g + color.b) / 3.2; //mixes rgb divided to make it less saturated 
-  float weight = Saturation + (1.0 - getrgb) * (0.1 + (Vibrance - 1.0));
-  
-  return mix(vec3(getrgb), color, weight * 1.2); 
+const bool colortex4MipmapEnabled = true;
+
+//--// Outputs //----------------------------------------------------------------------------------------//
+
+/* DRAWBUFFERS:0 */
+
+layout (location = 0) out vec3 finalColor;
+
+//--// Inputs //-----------------------------------------------------------------------------------------//
+
+in vec2 fragCoord;
+
+in float avglum;
+
+//--// Uniforms //---------------------------------------------------------------------------------------//
+
+uniform sampler2D colortex4;
+
+#ifdef BLOOM
+uniform float viewWidth, viewHeight;
+uniform sampler2D colortex5;
+#endif
+
+uniform float blindness;
+
+//--// Functions //--------------------------------------------------------------------------------------//
+
+#include "/lib/debug.glsl"
+
+#include "/lib/preprocess.glsl"
+
+#include "/lib/util/textureBicubic.glsl"
+
+//--//
+
+#ifdef BLOOM
+void applyBloom(inout vec3 color) {
+	vec2 px = 1.0 / vec2(viewWidth, viewHeight);
+
+	vec3
+	bloom  = textureBicubic(colortex5, (fragCoord / exp2(1)) + vec2(0.00000           , 0.00000            )).rgb * 0.475;
+	bloom += textureBicubic(colortex5, (fragCoord / exp2(2)) + vec2(0.00000           , 0.50000 + px.y * 19)).rgb * 0.625;
+	bloom += textureBicubic(colortex5, (fragCoord / exp2(3)) + vec2(0.25000 + px.x * 2, 0.50000 + px.y * 19)).rgb * 0.750;
+	bloom += textureBicubic(colortex5, (fragCoord / exp2(4)) + vec2(0.25000 + px.x * 2, 0.62500 + px.y * 37)).rgb * 0.850;
+	bloom += textureBicubic(colortex5, (fragCoord / exp2(5)) + vec2(0.31250 + px.x * 4, 0.62500 + px.y * 37)).rgb * 0.925;
+	bloom += textureBicubic(colortex5, (fragCoord / exp2(6)) + vec2(0.31250 + px.x * 4, 0.65625 + px.y * 55)).rgb * 0.975;
+	bloom += textureBicubic(colortex5, (fragCoord / exp2(7)) + vec2(0.46875 + px.x * 6, 0.65625 + px.y * 55)).rgb * 1.000;
+	bloom /= 5.6;
+
+	color = mix(color, bloom, BLOOM_AMOUNT * 0.5);
+}
+#endif
+
+void lowLightAdapt(inout vec3 color) { 
+  float rod = dot(color, vec3(15, 50, 35)); 
+  rod *= 1.0 - pow(smoothstep(0.0, 4.0, rod), 0.01); 
+
+  color = (rod + color) * clamp(0.3 / avglum, 2e-5, 0.1); 
+} 
+
+void tonemap(inout vec3 color) {
+	color *= color;
+	color /= color + 1.0;
+	color  = pow(color, vec3(0.5 / GAMMA));
+}
+void dither(inout vec3 color) {
+	const mat4 pattern = mat4(
+		 1,  9,  3, 11,
+		13,  5, 15,  7,
+		 4, 12,  2, 10,
+		16,  8, 14,  6
+	) / (255 * 17);
+
+	ivec2 p = ivec2(mod(gl_FragCoord.st, 4.0));
+
+	color += pattern[p.x][p.y];
 }
 
-vec3 vignette(vec3 color) {
-    float dist = distance(texcoord.st, vec2(0.5)) * Vignette_Strength;
-
-    dist = pow(dist/2.0, 1.1);
-
-    return color * (1.0 - dist);
-}
-
-vec3 ditherScreen(inout vec3 color) {
-    vec3 lestynRGB = vec3(dot(vec2(171.0, 231.0), gl_FragCoord.xy));
-         lestynRGB = fract(lestynRGB.rgb / vec3(103.0, 71.0, 97.0));
-
-    return color += lestynRGB.rgb / 255.0;
-}
 void main() {
+	finalColor = texture(colortex4, fragCoord).rgb;
 
-    vec4 color = texture2D(colortex0, texcoord.st) * color;
-    color.rgb = getTonemap(color.rgb);
+	#ifdef BLOOM
+	applyBloom(finalColor);
+	#endif
 
-    color.rgb = vignette(color.rgb);
-    vec3 ditheredColor = ditherScreen(color.rgb);
-    vec3 finalColor = ditheredColor;
+	lowLightAdapt(finalColor);
 
-    /*DRAWBUFFERS:0*/
-    gl_FragData[0] = vec4(finalColor, 1.0);
+	tonemap(finalColor);
+	dither(finalColor);
+
+	debugExit();
 }

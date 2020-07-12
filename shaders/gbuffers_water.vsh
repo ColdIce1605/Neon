@@ -1,98 +1,78 @@
 #version 420 compatibility
-#define gbuffers_water
-#define vsh
-#include "/lib/Syntax.glsl"
 
-in vec4 mc_Entity;
+//--// Structs //----------------------------------------------------------------------------------------//
 
-uniform mat4 gbufferModelViewInverse;
+struct worldStruct {
+	vec3 globalLightVector;
+	vec3 globalLightColor;
 
-uniform int worldTime;
+	vec3 upVector;
+};
 
-out float isWater;
-out float isIce;
-out float isTransparent;
+//--// Outputs //----------------------------------------------------------------------------------------//
 
-out vec2 lmcoord;
-out vec2 texcoord;
+out vec3 positionView, positionLocal;
 
-out vec3 normal;
+out mat3 tbnMatrix;
+out vec4 tint;
+out vec2 baseUV, lmUV;
+out float blockID;
 
-out vec4 position;
-out vec4 color;
+out worldStruct world;
 
-#define DRAG_MULT 0.048
-#define ITERATIONS_NORMAL 48
-#define WATER_DEPTH 2.1
-#define Time (worldTime / 1.0)
+//--// Inputs //-----------------------------------------------------------------------------------------//
 
-float getIsTransparent(in float materialId) {
-    if (materialId == 160.0) { // stained glass pane
-        return 1.0;
-    }
-    if (materialId == 95.0) { //stained glass
-        return 1.0;
-    }
-    if (materialId == 79.0) { //ice
-        return 1.0;
-    }
-    if (materialId == 8.0 || materialId == 9.0) { //water 
-        return 1.0;
-    }
-    return 0.0;
-}
+layout (location = 0)  in vec4 vertexPosition;
+layout (location = 2)  in vec3 vertexNormal;
+layout (location = 3)  in vec4 vertexColor;
+layout (location = 8)  in vec2 vertexUV;
+layout (location = 9)  in vec2 vertexLightmap;
+layout (location = 10) in vec4 vertexMetadata;
+layout (location = 12) in vec4 vertexTangent;
 
-// returns vec2 with wave height in X and its derivative in Y
-vec2 wavedx(vec2 position, vec2 direction, float speed, float frequency, float timeshift) {
-	float x = dot(direction, position) * frequency + timeshift * speed;
-	float wave = exp(sin(x) - 1.0);
-	float dx = wave * cos(x);
-	return vec2(wave, -dx);
-}
-float getwaves(vec2 position, int iterations) {
-	float iter = 0.0;
-	float phase = 6.0;
-	float speed = 2.0;
-	float weight = 1.0;
-	float w = 0.0;
-	float ws = 0.0;
-    for(int i=0;i<iterations;i++){
-        vec2 p = vec2(sin(iter), cos(iter));
-        vec2 res = wavedx(position, p, speed, phase, Time);
-        position += normalize(p) * res.y * weight * DRAG_MULT;
-        w += res.x * weight;
-        iter += 12.0;
-        ws += weight;
-        weight = mix(weight, 0.0, 0.2);
-        phase *= 1.18;
-        speed *= 1.07;
-    }
-    return w / ws;
+//--// Uniforms //---------------------------------------------------------------------------------------//
+
+uniform float sunAngle;
+
+uniform vec3 shadowLightPosition;
+uniform vec3 upPosition;
+
+uniform mat4 gbufferProjection, gbufferModelViewInverse;
+
+//--// Functions //--------------------------------------------------------------------------------------//
+
+#include "/lib/lightingConstants.glsl"
+
+//--//
+
+#include "/lib/gbuffers/initPosition.vsh"
+
+mat3 calculateTBN() {
+	vec3 tangent = normalize(vertexTangent.xyz);
+
+	return mat3(
+		gl_NormalMatrix * tangent,
+		gl_NormalMatrix * cross(tangent, vertexNormal) * sign(vertexTangent.w),
+		gl_NormalMatrix * vertexNormal
+	);
 }
 
 void main() {
-    
-	gl_Position = ftransform();
-	texcoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
-	lmcoord  = (gl_TextureMatrix[1] * gl_MultiTexCoord1).xy;
-	position = gbufferModelViewInverse * gl_ModelViewMatrix * gl_Vertex;
-	normal = normalize(gl_NormalMatrix * gl_Normal);
-	color = gl_Color;
+	gl_Position = initPosition();
+	positionView  = gl_Position.xyz;
+	positionLocal = (gbufferModelViewInverse * gl_Position).xyz;
+	gl_Position = gbufferProjection * gl_Position;
 
-    if (mc_Entity.x == 8 || mc_Entity.x == 9) {
-        isIce = 0;
-        isWater = 1;
-        //normal = mat3(gbufferModelViewInverse) * normal;
-        normal.y -= getwaves(ftransform().xz, 48);
-        //gl_Position = gl_ProjectionMatrix * gbufferModelView * position;
-    }
-    else if (mc_Entity.x == 79.0) {
-        isIce = 1;
-        isWater = 0;
-    }
-    else {
-        isIce = 0;
-        isWater = 0;
-    }
-    isTransparent = getIsTransparent(mc_Entity.x);
+	tbnMatrix = calculateTBN();
+	tint      = vertexColor;
+	baseUV    = vertexUV;
+	lmUV      = vertexLightmap / 240.0;
+	blockID   = vertexMetadata.x;
+
+	//--// Fill world struct
+
+	world.globalLightVector = shadowLightPosition * 0.01;
+	world.globalLightColor  = mix(vec3(ILLUMINANCE_MOON), vec3(ILLUMINANCE_SUN), sunAngle < 0.5);
+
+	world.upVector = upPosition * 0.01;
 }

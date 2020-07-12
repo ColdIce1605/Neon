@@ -1,47 +1,131 @@
-#version 420 compatibility
-#define gbuffers_terrain
-#define fsh
-#include "/lib/Syntax.glsl"
-#include "/lib/framebuffer.glsl"
-#include "/lib/Settings.glsl"
+#version 420
+
+//--// Configuration //----------------------------------------------------------------------------------//
+
+#include "/cfg/global.scfg"
+
+#include "/cfg/parallax.scfg"
+
+//--// Outputs //----------------------------------------------------------------------------------------//
 
 /* DRAWBUFFERS:01 */
 
-layout (location = 0) out vec4 albedo;
-layout (location = 2) out vec4 normal;
+layout (location = 0) out vec4 packedMaterial;
+layout (location = 1) out vec4 packedData;
 
-uniform sampler2D lightmap;
-uniform sampler2D texture;
-uniform sampler2D normals;
+//--// Inputs //-----------------------------------------------------------------------------------------//
 
-in vec2 lmcoord;
-in vec2 texcoord;
-
-in vec4 color;
+in vec3 positionView;
 
 in mat3 tbnMatrix;
+in vec4 tint;
+in vec2 baseUV, lmUV;
+in vec4 metadata;
 
-#define GetTexture(sampler, coord) texture2D(sampler, texcoord)
+//--// Uniforms //---------------------------------------------------------------------------------------//
 
-vec3 calcNormals(vec2 texcoord) {
-#ifdef MC_NORMAL_MAP
-	vec3 normal = GetTexture(normals, texcoord).xyz;
-#else
-	vec3 normal = vec3(0.5, 0.5, 1.0);
+uniform vec3 shadowLightPosition;
+
+uniform mat4 gbufferProjection;
+
+uniform sampler2D base, specular;
+uniform sampler2D normals;
+
+//--// Global constants & variables //-------------------------------------------------------------------//
+
+#ifdef PM
+float lodLevel = textureQueryLod(base, baseUV).x;
+#define texture(x, y) textureLod(x, y, lodLevel)
 #endif
-	
-	normal.xyz = tbnMatrix * normalize(normal.xyz * 2.0 - 1.0);
-	
-	return normal;
+
+//--// Functions //--------------------------------------------------------------------------------------//
+
+#include "/lib/preprocess.glsl"
+
+//--//
+
+#ifdef PM_DEPTH_WRITE
+float delinearizeDepth(float depth) {
+	return ((depth * gbufferProjection[2].z + gbufferProjection[3].z) / (depth * gbufferProjection[2].w + gbufferProjection[3].w)) * 0.5 + 0.5;
+}
+#endif
+
+vec3 calculateParallaxCoord(vec2 coord, vec3 dir) {
+	#ifdef PM
+	if (length(positionView) > PM_DIST) {
+		#ifdef PM_DEPTH_WRITE
+		gl_FragDepth = gl_FragCoord.z;
+		#endif
+		return vec3(coord, 1.0);
+	}
+
+	vec2 atlasTiles = textureSize(base, 0) / TEXTURE_RESOLUTION;
+	vec4 tcoord = vec4(fract(coord * atlasTiles), floor(coord * atlasTiles));
+
+	vec3 increment = (2.0 / PM_STEPS) * vec3(PM_DEPTH, PM_DEPTH, 1.0) * (dir / -dir.z);
+	float foundHeight = texture(normals, coord).a;
+	vec3 offset = vec3(0.0, 0.0, 1.0);
+
+	for (int i = 0; i < PM_STEPS && foundHeight < offset.z; i++) {
+		offset += increment * pow(offset.z - foundHeight, 0.8);
+		foundHeight = texture(normals, (fract(tcoord.xy + offset.xy) + tcoord.zw) / atlasTiles).a;
+	}
+
+	#ifdef PM_DEPTH_WRITE
+	gl_FragDepth = delinearizeDepth(positionView.z + (normalize(positionView).z * length(vec3(offset.xy, offset.z * PM_DEPTH - PM_DEPTH))));
+	#endif
+
+	return vec3((fract(tcoord.xy + offset.xy) + tcoord.zw) / atlasTiles, offset.z);
+	#else
+	return vec3(coord, 1.0);
+	#endif
 }
 
+float calculateParallaxSelfShadow(vec3 coord, vec3 dir) {
+	#ifdef PSS
+	if (dot(tbnMatrix[2], shadowLightPosition) <= 0.0) return 0.0;
+
+	const vec2 atlasTiles = textureSize(base, 0) / TEXTURE_RESOLUTION;
+
+	vec4 tcoord = vec4(fract(coord.xy * atlasTiles), floor(coord.xy * atlasTiles));
+
+	vec3 increment = vec3(PM_DEPTH, PM_DEPTH, 1.0) * (dir / dir.z) / PSS_STEPS;
+	vec3 offset = vec3(0.0, 0.0, coord.z);
+
+	for (int i = 0; i < PSS_STEPS && offset.z < 1.0; i++) {
+		offset += increment;
+
+		float foundHeight = texture(normals, (fract(tcoord.xy + offset.xy) + tcoord.zw) / atlasTiles).a;
+		if (offset.z < foundHeight) return 0.0;
+	}
+	#endif
+
+	return 1.0;
+}
+
+vec3 getNormal(vec2 coord) {
+	vec3 tsn = texture(normals, coord).rgb;
+	tsn.xy += 0.5 / 255.0; // Need to add this for correct results.
+	return tbnMatrix * normalize(tsn * 2.0 - 1.0);
+}
+
+#include "/lib/util/packing/normal.glsl"
+
 void main() {
-    vec4 colorSample = texture2D(texture, texcoord) * color;
-    colorSample *= texture2D(lightmap, lmcoord); // remove * for whiteworld
-    vec3 normalSample = calcNormals(texcoord);
-    #ifdef WHITEWORLD
-        colorSample = vec4(1.0, 1.0, 1.0, 1.0);
-    #endif
-    albedo = vec4((colorSample.rgb), colorSample.a);
-    normal = vec4(normalSample, 1.0);
+	vec3 pCoord = calculateParallaxCoord(baseUV, normalize(positionView) * tbnMatrix);
+
+	vec4 baseTex = texture(base, pCoord.st) * tint;
+	if (baseTex.a < 0.102) discard; // ~ 26 / 255
+
+	vec4 diff = vec4(baseTex.rgb, metadata.x / 255.0);
+	vec4 spec = texture(specular, pCoord.st);
+	vec4 emis = vec4(0.0);
+
+	//--//
+
+	packedMaterial = vec4(uintBitsToFloat(uvec3(packUnorm4x8(diff), packUnorm4x8(spec), packUnorm4x8(emis))), 1.0);
+
+	packedData.rg = packNormal(getNormal(pCoord.st));
+	packedData.b = uintBitsToFloat(packUnorm4x8(vec4(sqrt(lmUV), calculateParallaxSelfShadow(pCoord, normalize(shadowLightPosition * tbnMatrix)), 0.0)));
+	packedData.a = 1.0;
 }

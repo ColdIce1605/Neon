@@ -1,21 +1,24 @@
 #version 420 compatibility
-#define gbuffers_basic
-#define vsh
-#include "/lib/Syntax.glsl"
+
+//--// Outputs //----------------------------------------------------------------------------------------//
 
 out vec4 color;
-out vec4 texcoord;
 
-out vec3 normal;
+//--// Inputs //-----------------------------------------------------------------------------------------//
+
+layout (location = 0) in vec4 vertexPosition;
+layout (location = 3) in vec4 vertexColor;
+
+//--// Uniforms //---------------------------------------------------------------------------------------//
+
+//uniform mat4 gbufferProjection;
+
+//--// Functions //--------------------------------------------------------------------------------------//
+
+#include "/lib/gbuffers/initPosition.vsh"
 
 void main() {
-        texcoord      = gl_TextureMatrix[0] * gl_MultiTexCoord0;
+	gl_Position = gl_ProjectionMatrix * initPosition();
 
-	vec4 position = gl_Vertex;
-
-	gl_Position   = gl_ProjectionMatrix * (gl_ModelViewMatrix * position);
-
-        color         = gl_Color;
-
-        normal        = normalize(gl_NormalMatrix * gl_Normal);
+	color = vertexColor;
 }

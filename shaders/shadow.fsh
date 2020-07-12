@@ -1,23 +1,31 @@
-#version 420 compatibility
-#define shadow
-#define fsh
-#include "/lib/Syntax.glsl"
-#include "/lib/framebuffer.glsl"
-#include "/lib/Settings.glsl"
+#version 420
 
-uniform sampler2D tex;
-uniform sampler2D texture;
+//--// Configuration //----------------------------------------------------------------------------------//
 
-in vec4 texcoord;
-in vec4 color;
-in float isTransparent;
+#include "/cfg/global.scfg"
+
+//--// Outputs //----------------------------------------------------------------------------------------//
+
+/* DRAWBUFFERS:01 */
+
+layout (location = 0) out vec4 color;
+layout (location = 1) out vec4 normal;
+
+//--// Inputs //-----------------------------------------------------------------------------------------//
+
+in vec4 tint;
+in vec2 baseUV;
+in vec3 vertNormal;
+
+//--// Uniforms //---------------------------------------------------------------------------------------//
+
+uniform sampler2D base;
+
+//--// Functions //--------------------------------------------------------------------------------------//
 
 void main() {
-    if (texture2D(texture, texcoord.st).a < 0.35) {
-        discard;
-    }
-    vec3 fragColor = color.rgb * texture2D(tex, texcoord.st).rgb;
-    fragColor = mix(vec3(0), fragColor, isTransparent);
-
-    gl_FragData[0] = vec4(fragColor, 1.0);
+	color     = texture(base, baseUV) * tint;
+	if (color.a < 0.102) discard; // ~ 26 / 255
+	color.rgb = pow(color.rgb, vec3(GAMMA));
+	normal    = vec4(vertNormal * 0.5 + 0.5, 1.0);
 }

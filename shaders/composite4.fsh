@@ -1,47 +1,44 @@
-#version 420 compatibility
+#version 420
 
-  #extension GL_EXT_gpu_shader4 : require
-  #extension GL_ARB_shader_texture_lod : enable
+//--// Configuration //----------------------------------------------------------------------------------//
 
-#define composite4
-#define fsh
-#include "/lib/Syntax.glsl"
-#include "/lib/framebuffer.glsl"
-#include "/lib/Settings.glsl"
+#include "/cfg/global.scfg"
 
-/* DRAWBUFFERS:02 */
+#define COMPOSITE 4
 
-uniform sampler2D tex;
-uniform sampler2D colortex0;
-uniform sampler2D colortex2;
-uniform sampler2D depthtex0;
+#include "/cfg/bloom.scfg"
 
-uniform float viewWidth;
+//--// Outputs //----------------------------------------------------------------------------------------//
+
+/* DRAWBUFFERS:5 */
+
+layout (location = 0) out vec4 bloom;
+
+//--// Inputs //-----------------------------------------------------------------------------------------//
+
+in vec2 fragCoord;
+
+//--// Uniforms //---------------------------------------------------------------------------------------//
+
+#ifdef BLOOM
 uniform float viewHeight;
-uniform float aspectRatio;
+uniform sampler2D colortex5;
+#endif
 
-in vec2 texcoord;
-in vec2 screenCoord;
+//--// Functions //--------------------------------------------------------------------------------------//
 
-layout (location = 0) out vec4 albedo;
-/*
-uniform bool horizontal;
-uniform float weight[5] = float[] (0.227027, 0.1945946, 0.1216216, 0.054054, 0.016216);
-
-//layout (location = 0) out vec4 albedo;
-//layout (location = 3) out vec4 bloom_pass1;
-
-void bloom() {
-float brightness = dot(colortex0.rgb, vec3(0.2126, 0.7152, 0.0722));
-    if(brightness > 1.0)
-        BrightColor = vec4(colortex0.rgb, 1.0);
-    else
-        BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
-}
-*/
 void main() {
-    vec3 color = texture2D(colortex0, texcoord.st).rgb;
-    albedo = vec4(color, 1.0);
+	// TODO: Limit it to the tiles.
 
-    //bloom_pass1 = vec4(bloom(), 1.0);
+	#ifdef BLOOM
+	const float[5] weights = float[5](0.19947114, 0.29701803, 0.09175428, 0.01098007, 0.00050326);
+	const float[5] offsets = float[5](0.00000000, 1.40733340, 3.29421497, 5.20181322, 7.13296424);
+
+	bloom = texture(colortex5, fragCoord) * weights[0];
+	for (int i = 1; i < 5; i++) {
+		vec2 offset = offsets[i] * vec2(0.0, 1.0 / viewHeight);
+		bloom += texture(colortex5, fragCoord + offset) * weights[i];
+		bloom += texture(colortex5, fragCoord - offset) * weights[i];
+	}
+	#endif
 }

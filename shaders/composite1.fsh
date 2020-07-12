@@ -1,135 +1,168 @@
-#version 420 compatibility
-#define composite1
-#define fsh
-#include "/lib/Syntax.glsl"
-#include "/lib/framebuffer.glsl"
-#include "/lib/Settings.glsl"
+#version 420
 
-#include "/lib/poisson.glsl"
+//--// Configuration //----------------------------------------------------------------------------------//
 
-layout (location = 0) out vec4 albedo;
-layout (location = 1) out vec4 depth_composite1;
+#include "/cfg/global.scfg"
 
-#define SHADOWMAP_BIAS 0.85
+#define COMPOSITE 1
 
-uniform sampler2D colortex0;
-uniform sampler2D colortex2;
-uniform sampler2D shadowtex0; 
-uniform sampler2D shadowcolor0; //only one
-uniform sampler2D depthtex1; //samples depth
-uniform sampler2D noisetex;  //for rotation matrix
-uniform sampler2D normals;
+#include "/cfg/hssrs.scfg"
+#include "/cfg/globalIllumination.scfg"
 
-uniform vec3 cameraPosition;
+#define REFLECTION_SAMPLES 1 // [0 1 2 4 8 16]
+
+//--// Whatever I end up naming this //------------------------------------------------------------------//
+
+#include "/lib/materials.glsl"
+
+//--// Structs //----------------------------------------------------------------------------------------//
+
+struct surfaceStruct {
+	material mat;
+
+	vec3 normal;
+	vec3 normalGeom;
+
+	float depth;
+
+	vec3 positionScreen; // Position in screen-space
+	vec3 positionView;   // Position in view-space
+	vec3 positionLocal;  // Position in local-space
+};
+
+struct lightStruct {
+	vec2 engine;
+
+	vec3 global;
+	vec3 sky;
+	vec3 block;
+};
+
+struct worldStruct {
+	vec3 globalLightVector;
+	vec3 globalLightColor;
+
+	vec3 upVector;
+};
+
+//--// Outputs //----------------------------------------------------------------------------------------//
+
+/* DRAWBUFFERS:4 */
+
+layout (location = 0) out vec3 composite;
+
+//--// Inputs //-----------------------------------------------------------------------------------------//
+
+in vec2 fragCoord;
+
+in worldStruct world;
+
+//--// Uniforms //---------------------------------------------------------------------------------------//
+
+uniform float shadowAngle;
+
+uniform vec3 skyColor;
+
 uniform vec3 shadowLightPosition;
 
-uniform mat4 gbufferModelViewInverse; //for position
-uniform mat4 gbufferModelView;
-uniform mat4 shadowProjection; //shadow position
 uniform mat4 gbufferProjection;
-uniform mat4 gbufferProjectionInverse;
-uniform mat4 shadowModelView; // shadow model view
+uniform mat4 gbufferProjectionInverse, gbufferModelViewInverse;
+uniform mat4 shadowProjection, shadowModelView;
+uniform mat4 shadowProjectionInverse;
 
-uniform int worldTime;
+uniform sampler2D colortex0, colortex1;
+uniform sampler2D depthtex1;
 
-uniform float frameTimeCounter;
-uniform float viewWidth;
-uniform float viewHeight;
+uniform sampler2D shadowtex0;
+uniform sampler2DShadow shadowtex1;
 
-in vec4 texcoord;
+uniform sampler2D colortex4;
+#ifdef GI
+uniform sampler2D colortex5;
+#endif
 
+//--// Functions //--------------------------------------------------------------------------------------//
 
+#include "/lib/debug.glsl"
 
-float timefract = worldTime; //using another name for worldtime
+#include "/lib/preprocess.glsl"
+#include "/lib/lightingConstants.glsl"
+#include "/lib/time.glsl"
 
-//Get the time of the day
-float TimeSunrise  = ((clamp(timefract, 23000.0, 24000.0) - 23000.0) / 1000.0) + (1.0 - (clamp(timefract, 0.0, 4000.0)/4000.0)); //get the time of the sunrise, noon, sunset and night
-float TimeNoon     = ((clamp(timefract, 0.0, 4000.0)) / 4000.0) - ((clamp(timefract, 8000.0, 12000.0) - 8000.0) / 4000.0);
-float TimeSunset   = ((clamp(timefract, 8000.0, 12000.0) - 8000.0) / 4000.0) - ((clamp(timefract, 12000.0, 12750.0) - 12000.0) / 750.0);
-float TimeMidnight = ((clamp(timefract, 12000.0, 12750.0) - 12000.0) / 750.0) - ((clamp(timefract, 23000.0, 24000.0) - 23000.0) / 1000.0);
+#include "/lib/util/packing/normal.glsl"
+#include "/lib/util/noise.glsl"
+#include "/lib/util/sumof.glsl"
 
-#include "/lib/getSpace.glsl"
+//--//
 
-vec4 getDistortFactor(in vec4 shadowPos) {
-    vec4 multipliedPos = shadowPos * shadowPos;
-    
-    float factordistance = pow(multipliedPos.x * multipliedPos.x + multipliedPos.y * multipliedPos.y, 1.0 / 5.0);
-    float distortFactor = (1.0 - SHADOWMAP_BIAS) + factordistance * SHADOWMAP_BIAS;
-    shadowPos.xy /= distortFactor;
+#include "/lib/composite/get/normal.fsh"
 
-    return shadowPos;
+//--//
+
+float linearizeDepth(float depth) {
+	return -1.0 / ((depth * 2.0 - 1.0) * gbufferProjectionInverse[2].w + gbufferProjectionInverse[3].w);
+}
+vec3 screenSpaceToViewSpace(vec3 screenSpace) {
+	vec4 viewSpace = gbufferProjectionInverse * vec4(screenSpace * 2.0 - 1.0, 1.0);
+	return viewSpace.xyz / viewSpace.w;
+}
+vec3 viewSpaceToScreenSpace(vec3 viewSpace) {
+	vec4 screenSpace = gbufferProjection * vec4(viewSpace, 1.0);
+	return (screenSpace.xyz / screenSpace.w) * 0.5 + 0.5;
+}
+vec3 viewSpaceToLocalSpace(vec3 viewSpace) {
+	return (gbufferModelViewInverse * vec4(viewSpace, 1.0)).xyz;
 }
 
-vec3 getShadowSpacePosition(in vec2 coord) {
-    vec4 worldSpacePos = getWorldSpacePosition(coord);
-    worldSpacePos.xyz -= cameraPosition; //important for shadows
-    vec4 shadowSpacePos = shadowModelView * worldSpacePos;
- shadowSpacePos = shadowProjection * shadowSpacePos;
+//--//
 
- shadowSpacePos = getDistortFactor(shadowSpacePos);
+#include "/lib/light/global.fsh"
+#include "/lib/light/sky.fsh"
+#include "/lib/light/block.fsh"
 
-    return shadowSpacePos.xyz * 0.5 + 0.5;
-}
-
-mat2 getRotationMatrix(in vec2 coord) {
-    float rotationAmount = texture2D(
-        noisetex,
-        coord * vec2(
-            viewWidth / noiseTextureResolution,
-            viewHeight / noiseTextureResolution
-        )
-    ).r;
-    
-    return mat2(
-        cos(rotationAmount), -sin(rotationAmount),
-        sin(rotationAmount), cos(rotationAmount)
-    );
-}  // shadow rotation
-
-vec3 getShadows(in vec2 coord) {
-    vec3 shadowCoord = getShadowSpacePosition(coord);
-
-    mat2 rotationMatrix = getRotationMatrix(coord);
-
-    vec3 shadowColor = vec3(0.0); //variable
-
-    for (int i = 0; i < samplePoints.length(); i++) { //shadows loop
-
-        vec2 offset = vec2(samplePoints[i] / shadowMapResolution); // for rotationmatrix
-        offset = rotationMatrix * offset; 
-        
-        float shadowMapSample = texture2D(shadowtex0, shadowCoord.st + offset).r;
-        float visibility = step(shadowCoord.z - shadowMapSample, 0.001);
-        
-        vec3 litTimesColor = vec3(0.6, 0.6, 0.3);
-        vec3 dayColor = vec3(1.0);
-        vec3 nightColor = vec3(0.5);
-        vec3 mixedColor = vec3(litTimesColor * TimeSunrise + dayColor * TimeNoon + litTimesColor * TimeSunset + nightColor * TimeMidnight);
-        vec3 colorSample = texture2D(shadowcolor0, shadowCoord.st + offset).rgb; //for sampling shadow color
-        shadowColor += mix(colorSample, mixedColor, visibility);
-    }
-    return vec3(shadowColor) / samplePoints.length();
-} //shadows code
-
-vec3 calculateLighting(in vec3 color) {
-    vec3 sunLight = getShadows(texcoord.st);
-    vec3 ambientLight = (vec3(0.75) * TimeSunrise + (vec3(0.5, 0.7, 1.0) * 0.5) * TimeNoon + vec3(0.75) * TimeSunset + vec3(0.55) * TimeMidnight);
-    vec3 normalMap = texture2D(colortex2, texcoord.st).xyz * 2.0 - 1.0;
-
-    float Diffuse = max(dot(normalMap, normalize(shadowLightPosition)), 0.0);
-
-    sunLight *= vec3(min(Diffuse, float(sunLight)));
-
-    return color * (sunLight + ambientLight);
-} //lighting
+//--//
 
 void main() {
-    depth = texture2D(depthtex1, texcoord.st).r;
-    bool isTerrain = depth < 1.0; 
-    vec3 color = texture2D(colortex0, texcoord.st).rgb;
+	surfaceStruct surface;
 
-    if (isTerrain) color = calculateLighting(color);
+	surface.depth.x = texture(depthtex1, fragCoord).r;
+	if (surface.depth.x == 1.0) {
+		composite = texture(colortex4, fragCoord).rgb;
+		debugExit(); return;
+	}
 
-    albedo = vec4(color, 1.0); //fragdatas are vec4s must have , 1.0 to do vec3s
-    depth_composite1 = vec4(depth); //depth come out
+	surface.positionScreen = vec3(fragCoord, surface.depth.x);
+	surface.positionView   = screenSpaceToViewSpace(surface.positionScreen);
+	surface.positionLocal  = viewSpaceToLocalSpace(surface.positionView);
+
+	surface.mat = getPackedMaterial(colortex0, fragCoord);
+
+	surface.normal     = getNormal(fragCoord);
+	surface.normalGeom = normalize(cross(dFdx(surface.positionView), dFdy(surface.positionView)));
+
+	//--//
+
+	vec4 tex1BUnpack = unpackUnorm4x8(floatBitsToUint(textureRaw(colortex1, fragCoord).b));
+
+	//--//
+
+	lightStruct light;
+
+	light.engine = tex1BUnpack.rg * tex1BUnpack.rg;
+
+	light.global = calculateGlobalLight(world, surface, tex1BUnpack.b);
+	light.sky   = calculateSkyLight(surface.normal, world.upVector, light.engine.y);
+	light.block = calculateBlockLight(light.engine.x);
+
+	composite = light.global + light.sky + light.block;
+
+	#if REFLECTION_SAMPLES > 0
+	composite *= surface.mat.diffuse;
+	#else
+	composite *= mix(surface.mat.diffuse, vec3(1.0), surface.mat.specular);
+	#endif
+
+	if (any(isinf(composite) || isnan(composite))) composite = vec3(0.0);
+
+	debugExit();
 }

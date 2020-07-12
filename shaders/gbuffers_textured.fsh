@@ -1,29 +1,45 @@
-#version 420 compatibility
-#define gbuffers_textured
-#define fsh
-#define ShaderStage -1
-#include "/lib/Syntax.glsl"
-#include "/lib/framebuffer.glsl"
-#include "/lib/Settings.glsl"
+#version 420
 
-/* DRAWBUFFERS:0 */
+//--// Configuration //----------------------------------------------------------------------------------//
 
-layout (location = 0) out vec4 albedo;
+#include "/cfg/global.scfg"
 
-uniform sampler2D texture;
+//--// Outputs //----------------------------------------------------------------------------------------//
 
-in vec2 texcoord;
-in vec4 color;
+/* DRAWBUFFERS:01 */
 
-vec3 sRGB2L(vec3 sRGBCol) {
-	vec3 linearRGBLo  = sRGBCol / 12.92;
-	vec3 linearRGBHi  = pow((sRGBCol + 0.055) / 1.055, vec3(2.4));
-	vec3 linearRGB    = mix(linearRGBHi, linearRGBLo, lessThanEqual(sRGBCol, vec3(0.04045)));
+layout (location = 0) out vec4 packedMaterial;
+layout (location = 1) out vec4 packedData;
 
-	return  linearRGB;
-}
+//--// Inputs //-----------------------------------------------------------------------------------------//
+
+in mat3 tbnMatrix;
+in vec4 tint;
+in vec2 baseUV, lmUV;
+
+//--// Uniforms //---------------------------------------------------------------------------------------//
+
+uniform vec3 shadowLightPosition;
+
+uniform sampler2D base, specular;
+
+//--// Functions //--------------------------------------------------------------------------------------//
+
+#include "/lib/util/packing/normal.glsl"
 
 void main() {
-    albedo = texture2D(texture, texcoord) * color;
-    albedo = vec4(sRGB2L(albedo.rgb), albedo.a);
+	vec4 baseTex = texture(base, baseUV) * tint;
+	if (baseTex.a < 0.102) discard; // ~ 26 / 255
+
+	vec4 diff = vec4(baseTex.rgb, 254.0 / 255.0);
+	vec4 spec = texture(specular, baseUV);
+	vec4 emis = vec4(0.0);
+
+	//--//
+
+	packedMaterial = vec4(uintBitsToFloat(uvec3(packUnorm4x8(diff), packUnorm4x8(spec), packUnorm4x8(emis))), 1.0);
+
+	packedData.rg = packNormal(tbnMatrix[2]);
+	packedData.b = uintBitsToFloat(packUnorm4x8(vec4(sqrt(lmUV), 1.0, 0.0)));
+	packedData.a = 1.0;
 }

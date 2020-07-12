@@ -1,0 +1,10 @@
+#define GI
+
+#define GI_SAMPLES    16  // Approximate number of samples taken. More samples means higher quality, at the cost of performance. [4 9 16 25 36 49 64 81]
+#define GI_RESOLUTION 0.5 // Higher values mean a sharper result and higher quality, at the cost of reduced performance. [0.5 1.0]
+#define GI_RADIUS     4.0 // The range of the GI, in blocks. [4.0 8.0]
+
+// Advanced parameters
+#define GI_LOD_DEPTH  2 // LOD level to sample depth at. [0 1 2]
+#define GI_LOD_NORMAL 5 // LOD level to sample normals at. [0 2 4 5]
+#define GI_LOD_ALBEDO 5 // LOD level to sample albedo at. [0 2 4 5]
