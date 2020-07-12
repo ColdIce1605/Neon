@@ -15,7 +15,7 @@ const int noiseTextureResolution = 128;
 
 //--// Shadows
 
-const int   shadowMapResolution = 2048; // [1024 2048 4096]
+const int   shadowMapResolution = 2048; // [1024 2048 4096 8192]
 const float shadowDistance      = 16.0; // [16.0 32.0]
 
 //--// Texture formats
