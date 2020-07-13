@@ -1,5 +1,5 @@
 //#define DEBUG
-#define DEBUG_PROGRAM 0 // -1 = gbuffers. 0-15 = composite0-15. 16 = final [0 1 2 16]
+#define DEBUG_PROGRAM 0 // -1 = gbuffers. 0-15 = composite0-15. 16 = final [0 1 2 3 4 5 16]
 
 #ifdef DEBUG
 vec3 debugDisplay;

@@ -40,6 +40,9 @@ uniform float blindness;
 #include "/lib/preprocess.glsl"
 
 #include "/lib/util/textureBicubic.glsl"
+#include "/lib/util/productof.glsl"
+
+#include "/lib/aces.glsl"
 
 //--//
 
@@ -73,7 +76,22 @@ void tonemap(inout vec3 color) {
 	color /= color + 1.0;
 	color  = pow(color, vec3(0.5 / GAMMA));
 }
+/*
+float ACESFitted(vec3 color)
+{
+    color = productof(ACESInputMat, color);
 
+    // Apply RRT and ODT
+    color = RRTAndODTFit(color);
+
+    color = productof(ACESOutputMat, color);
+
+    // Clamp to [0, 1]
+    color = saturate(color);
+
+    return color;
+}
+*/
 void vignette(inout vec3 color) {
     float dist = distance(fragCoord, vec2(0.5)) * Vignette_Strength;
 
