@@ -19,9 +19,9 @@ in vec2 baseUV, lmUV;
 
 //--// Uniforms //---------------------------------------------------------------------------------------//
 
-uniform vec3 shadowLightPosition;
-
 uniform sampler2D base, specular;
+
+uniform vec4 entityColor;
 
 //--// Functions //--------------------------------------------------------------------------------------//
 
@@ -29,6 +29,7 @@ uniform sampler2D base, specular;
 
 void main() {
 	vec4 baseTex = texture(base, baseUV) * tint;
+	baseTex.rgb = mix(baseTex.rgb, baseTex.rgb * entityColor.rgb, entityColor.a);
 	if (baseTex.a < 0.102) discard; // ~ 26 / 255
 
 	vec4 diff = vec4(baseTex.rgb, 254.0 / 255.0);

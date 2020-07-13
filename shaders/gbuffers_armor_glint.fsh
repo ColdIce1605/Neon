@@ -28,6 +28,7 @@ uniform sampler2D base, specular;
 void main() {
 	vec4 baseTex = texture(base, baseUV) * tint;
 	if (baseTex.a < 0.102) discard; // ~ 26 / 255
+
 	vec4 diff = vec4(baseTex.rgb, 254.0 / 255.0);
 	vec4 spec = texture(specular, baseUV);
 	vec4 emis = vec4(0.0);
@@ -38,5 +39,5 @@ void main() {
 
 	packedData.rg = packNormal(tbnMatrix[2]);
 	packedData.b = uintBitsToFloat(packUnorm4x8(vec4(sqrt(lmUV), 1.0, 0.0)));
-	packedData.a = baseTex.a;
+	packedData.a = 1.0;
 }
