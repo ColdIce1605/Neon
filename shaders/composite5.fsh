@@ -49,21 +49,24 @@ Then we will do a ray-plane intersection to get where on the plane the ray inter
 struct Ray {
 vec3 Origin;
 vec3 Direction;
-}
+};
 
 struct Plane {
-    center: Vector3D,
-    normal: Vector3D,
-}
+    vec3 center;
+    vec3 normal;
+};
 
 Ray WorldRay;
 WorldRay.Origin = cameraPosition;
 WorldRay.Direction = normalize(EyeDirectionVector); //We will calculate this in the vertex shader and pass it to the fragment shader as a varying
 Plane CloudPlane;
 CloudPlane.Position = vec3(cameraPosition.x, 256.0f, cameraPosition.z);
-CloudPlane.Normal = vec3(0.0f, 1.0f, 0.0f);
+CloudPlane.Normal = vec3(0.0, 1.0, 0.0);
+vec3 RayPlaneIntersection(vec3 PointRay, vec3 CloudPlane) {
+return vec3(0.0);
+}
 vec3 Intersection = RayPlaneIntersection(WorldRay, CloudPlane); //Get intersection point
-float CloudCoverage = PerlinNoise(Intersection.xy); //Get cloud coverage
+vec4 CloudCoverage = PerlinNoise(Intersection.xy); //Get cloud coverage
 
 void main() {
 
