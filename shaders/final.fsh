@@ -123,6 +123,7 @@ void main() {
 	lowLightAdapt(finalColor);
 
 	tonemap(finalColor);
+	//ACESFitted(finalColor);
 	dither(finalColor);
 
 	debugExit();
