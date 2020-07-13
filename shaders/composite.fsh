@@ -205,7 +205,7 @@ vec3 skyAtmosphere(vec3 viewDir) {
 	//--// Constants
 
 	const uint iSteps = 16;
-	const uint jSteps = 2; // 2 is pretty much the minimum that's somewhat accurate
+	const uint jSteps = 4; // 2 is pretty much the minimum that's somewhat accurate
 
 	const vec3 sunLightCol  = vec3(ILLUMINANCE_SUN);
 	const vec3 moonLightCol = vec3(ILLUMINANCE_MOON);
@@ -282,7 +282,7 @@ void skyAtmosphere(vec3 viewDir, out vec3 inscattered, out vec3 transmittance) {
 	//--// Constants
 
 	const uint iSteps = 20;
-	const uint jSteps = 2; // 2 is pretty much the minimum that's somewhat accurate
+	const uint jSteps = 4; // 2 is pretty much the minimum that's somewhat accurate
 
 	const vec3 sunLightCol  = vec3(ILLUMINANCE_SUN);
 	const vec3 moonLightCol = vec3(ILLUMINANCE_MOON);

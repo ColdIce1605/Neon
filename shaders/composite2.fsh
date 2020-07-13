@@ -8,8 +8,8 @@
 
 #include "/cfg/fog.scfg"
 
-#define REFLECTION_SAMPLES 1 // [0 1 2 4 8 16]
-#define REFLECTION_BOUNCES 1 // [1 2]
+#define REFLECTION_SAMPLES 1 // [0 1 2 4 8 16 32]
+#define REFLECTION_BOUNCES 1 // [1 2 4]
 
 //--// Materials //--------------------------------------------------------------------------------------//
 
