@@ -76,8 +76,8 @@ void tonemap(inout vec3 color) {
 	color /= color + 1.0;
 	color  = pow(color, vec3(0.5 / GAMMA));
 }
-/*
-float ACESFitted(vec3 color)
+
+void ACESFitted(inout vec3 color)
 {
     color = productof(ACESInputMat, color);
 
@@ -88,10 +88,8 @@ float ACESFitted(vec3 color)
 
     // Clamp to [0, 1]
     color = saturate(color);
-
-    return color;
 }
-*/
+
 void vignette(inout vec3 color) {
     float dist = distance(fragCoord, vec2(0.5)) * Vignette_Strength;
 

@@ -27,9 +27,9 @@ const mat3 ACESOutputMat =
     {-0.00327, -0.07276,  1.07602}
 };
 
-float RRTAndODTFit(float v)
+vec3 RRTAndODTFit(vec3 v)
 {
-    float a = v * (v + 0.0245786f) - 0.000090537f;
-    float b = v * (0.983729f * v + 0.4329510f) + 0.238081f;
+    vec3 a = v * (v + 0.0245786f) - 0.000090537f;
+    vec3 b = v * (0.983729 * v + 0.4329510) + 0.238081;
     return a / b;
 }
