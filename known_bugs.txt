@@ -1,5 +1,5 @@
 ! BUGS
 1: The edge of the lightmap creates a bright line
 2: Normals are very slightly off
-3: Hand isn't working
+3: Hand is simi working
 4: Shadows and the beginning of the night is very dark
