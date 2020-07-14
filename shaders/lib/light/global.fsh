@@ -156,7 +156,7 @@ float sampleShadowsPCSS(vec3 coord, float distortionScale) {
 #endif
 
 #ifdef HSSRS
-float calculateHSSRS(vec3 viewSpace, vec3 lightVector) {
+float calculateHSSRS(vec3 viewSpace, vec3 lightVector, vec3 coord) {
 	vec3 increment = lightVector * HSSRS_RAY_LENGTH / HSSRS_RAY_STEPS;
 
 	for (uint i = 0; i < HSSRS_RAY_STEPS; i++) {
@@ -171,8 +171,24 @@ float calculateHSSRS(vec3 viewSpace, vec3 lightVector) {
 	#ifdef HSSRS_TYPE
 		#if SHADOW_SAMPLING_TYPE == 0
 		return 1.0;
-		#elif SHADOW_SAMPLING_TYPE == 1
+		/*#elif SHADOW_SAMPLING_TYPE == 1
+			const vec2[12] offset = vec2[12](
+								vec2(-0.5, 1.5), vec2( 0.5, 1.5),
+				vec2(-1.5, 0.5), vec2(-0.5, 0.5), vec2( 0.5, 0.5), vec2( 1.5, 0.5),
+				vec2(-1.5,-0.5), vec2(-0.5,-0.5), vec2( 0.5,-0.5), vec2( 1.5,-0.5),
+								vec2(-0.5,-1.5), vec2( 0.5,-1.5)
+			);
+			vec2 resolution = textureSize(shadowtex1, 0);
+
+			float shadow = 0.0;
+			for (int i = 0; i < offset.length(); i++) {
+				shadow += texture(shadowtex1, coord + vec3(offset[i] / resolution, 0));
+			}
+			shadow /= offset.length(); shadow *= shadow;
+
+			return shadow;*/
 		#elif SHADOW_SAMPLING_TYPE == 2
+		
 		#endif
 	#endif
 
@@ -193,7 +209,7 @@ float calculateShadows(
 	float distortCoeff = 1.0 + length(shadowCoord.xy);
 
 	#ifdef HSSRS
-	if (calculateHSSRS(positionView, world.globalLightVector * distortCoeff) < 1.0 && !translucent) return 0.0;
+	if (calculateHSSRS(positionView, world.globalLightVector * distortCoeff, shadowCoord) < 1.0 && !translucent) return 0.0;
 	shadowCoord.z += HSSRS_RAY_LENGTH * shadowProjection[2].z * distortCoeff;
 	shadowCoord.z += 0.0002;
 	#else
