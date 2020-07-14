@@ -116,8 +116,13 @@ void main() {
 
 	vec4 baseTex = texture(base, pCoord.st) * tint;
 	if (baseTex.a < 0.102) discard; // ~ 26 / 255
-
+	
 	vec4 diff = vec4(baseTex.rgb, metadata.x / 255.0);
+	
+	#ifdef WHITEWORLD
+	diff = vec4(1.0);
+	#endif
+	
 	vec4 spec = texture(specular, pCoord.st);
 	vec4 emis = vec4(0.0);
 
