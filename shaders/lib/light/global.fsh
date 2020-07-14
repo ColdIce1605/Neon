@@ -168,6 +168,13 @@ float calculateHSSRS(vec3 viewSpace, vec3 lightVector) {
 		float diff = viewSpace.z - linearizeDepth(texture(depthtex1, screenSpace.xy).r);
 		if (diff < 0.005 * viewSpace.z && diff > 0.05 * viewSpace.z) return i / HSSRS_RAY_STEPS;
 	}
+	#ifdef HSSRS_TYPE
+		#if SHADOW_SAMPLING_TYPE == 0
+		return 1.0;
+		#elif SHADOW_SAMPLING_TYPE == 1
+		#elif SHADOW_SAMPLING_TYPE == 2
+		#endif
+	#endif
 
 	return 1.0;
 }
