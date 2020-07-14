@@ -5,7 +5,7 @@ float diffuseOrenNayar(vec3 light, vec3 normal, vec3 view, float roughness) {
 	vec2 angles = acos(vec2(NoL, NoV));
 
 	// Calculate angles.x, angles.y, and gamma
-	if (angles.x < angles.y) angles = angles.yx;
+	if (angles.x < angles.y) angles = angles.xy;
 	float gamma = dot(view - normal * NoV, light - normal * NoL);
 
 	float roughnessSquared = roughness * roughness;
