@@ -2,6 +2,10 @@
 
 /* DRAWBUFFERS:4 */
 
+//--// Outputs //----------------------------------------------------------------------------------------//
+
+layout (location = 0) out vec4 packedMaterial;
+
 //--// Inputs //-----------------------------------------------------------------------------------------//
 
 in float isSun;
@@ -25,6 +29,6 @@ vec3 skyMoon() {
 }
 
 void main() {
-	gl_FragColor.rgb = mix(skyMoon(), skySun(), isSun);
-	gl_FragColor.a = 1.0;
+	packedMaterial.rgb = mix(skyMoon(), skySun(), isSun);
+	packedMaterial.a = 1.0;
 }

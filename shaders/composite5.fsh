@@ -65,7 +65,7 @@ CloudPlane.Normal = vec3(0.0, 1.0, 0.0);
 vec3 RayPlaneIntersection(vec3 PointRay, vec3 CloudPlane) {
 return vec3(0.0);
 }
-vec3 Intersection = RayPlaneIntersection(WorldRay, CloudPlane); //Get intersection point
+vec3 Intersection = RayPlaneIntersection(Ray.WorldRay, Plane.CloudPlane); //Get intersection point
 vec4 CloudCoverage = PerlinNoise(Intersection.xy); //Get cloud coverage
 
 void main() {
