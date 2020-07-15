@@ -45,10 +45,13 @@ uniform vec3 sunPosition;
 
 //--//
 
+//https://www.shadertoy.com/view/Wd2XD1
+//Created by ming in 2019-03-28
+//Based on 2D Clouds by drift  https://www.shadertoy.com/view/4tdSWr
 const float cloudscale = 0.45;
 const float speed = 0.03;
-const vec3 skycolour1 = vec3(0.2, 0.4, 0.6);
-const vec3 skycolour2 = vec3(0.4, 0.7, 1.0);
+const vec3 skycolor1 = vec3(0.2, 0.4, 0.6);
+const vec3 skycolor2 = vec3(0.4, 0.7, 1.0);
 const float ambient = 0.15;
 const float intensity = 1.25;
 
@@ -152,11 +155,13 @@ float q = fbm(p0 * cloudscale *0.5);
    		float dens = density(p, screenres, time);
         T += (clamp((dens0 - dens), 0.0, 1.0) + ambient * steps_inv) * (1. - h);
     }
+	
+	vec3 skycolor = mix(skycolor2, skycolor1, p0.y);
     
     T = clamp(T, 0.0, 1.0);
     vec3 C = vec3(0.0);
     C = vec3(T) * intensity;
-    C = vec3(1.) - (vec3(1.) - C) * (vec3(1.) /*- skycolour*/ * 0.5); //todo remove comments
+    C = vec3(1.) - (vec3(1.) - C) * (vec3(1.) - skycolor * 0.5); //todo remove comments
 
 return C;
 }
