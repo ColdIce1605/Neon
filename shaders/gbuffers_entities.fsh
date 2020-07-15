@@ -21,6 +21,7 @@ in vec2 baseUV, lmUV;
 
 uniform sampler2D base, specular;
 
+uniform int entityId;
 uniform vec4 entityColor;
 
 //--// Functions //--------------------------------------------------------------------------------------//
@@ -30,8 +31,11 @@ uniform vec4 entityColor;
 void main() {
 	vec4 baseTex = texture(base, baseUV) * tint;
 	baseTex.rgb = mix(baseTex.rgb, baseTex.rgb * entityColor.rgb, entityColor.a);
+	#if entityId != 2000
 	if (baseTex.a < 0.102) discard; // ~ 26 / 255
-
+	#elif entityId == 2000
+	if (baseTex.a < 0.0) discard;
+	#endif
 	vec4 diff = vec4(baseTex.rgb, 254.0 / 255.0);
 	vec4 spec = texture(specular, baseUV);
 	vec4 emis = vec4(0.0);
