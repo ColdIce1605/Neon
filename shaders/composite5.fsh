@@ -172,8 +172,7 @@ return R;
 
 void main() {
  vec3 clouds = rayMarch2Dclouds();
- vec3 color = texture(colortex4);
-     clouds = mix(clouds, color);
-	//composite = vec4(clouds, 1.0);
-	composite = vec4(1.0);
+ vec4 color = texture(colortex4, fragCoord);
+     clouds = mix(clouds, color.rgb, 1.0);
+	composite = vec4(clouds, 1.0);
 }
