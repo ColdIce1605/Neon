@@ -17,7 +17,7 @@ uniform float sunAngle;
 
 #ifdef PERSISTENT_TIME
 // TODO: Account for sunAngle not counting up linearly
-const float globalTime = (fract(sunAngle - 0.0345175) + mod(worldDay, 127)) * 12e2;
+float globalTime = (fract(sunAngle - 0.0345175) + mod(worldDay, 127)) * 12e2;
 #else
 uniform float frameTimeCounter;
 

@@ -163,7 +163,7 @@ vec3 calculateReflection(surfaceStruct surface) {
 
 		for (uint j = 0; j < bounces; j++) {
 			reflColor *= f_fresnel(max0(dot(hitNormal, -rayDir)), hitMaterial.specular);
-			if (reflColor == 0.0) break;
+			if (reflColor == vec3(0.0)) break;
 
 			rayDir = reflect(rayDir, hitNormal);
 

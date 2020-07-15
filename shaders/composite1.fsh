@@ -161,8 +161,11 @@ void main() {
 	#else
 	composite *= mix(surface.mat.diffuse, vec3(1.0), surface.mat.specular);
 	#endif
-
+	#ifdef MC_GL_VENDOR_ATI 
+	if composite *= mix(surface.mat.diffuse, vec3(1.0), surface.mat.specular);
+	#endif
 	if (any(isinf(composite) || isnan(composite))) composite = vec3(0.0);
+	
 
 	debugExit();
 }
