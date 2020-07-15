@@ -161,11 +161,16 @@ float q = fbm(p0 * cloudscale *0.5);
     T = clamp(T, 0.0, 1.0);
     vec3 C = vec3(0.0);
     C = vec3(T) * intensity;
-    C = vec3(1.) - (vec3(1.) - C) * (vec3(1.) - skycolor * 0.5); //todo remove comments
+    C = vec3(1.) - (vec3(1.) - C) * (vec3(1.) - skycolor * 0.5);
+	
+	    float A2 = smoothstep(0.2, 1.0, A * A);
+		
+		vec3 R =  mix(skycolor, C, A2);
 
-return C;
+return R;
 }
 
 void main() {
-	composite = vec4(rayMarch2Dclouds, 1.0);
+ vec3 clouds = rayMarch2Dclouds();
+	composite = vec4(clouds, 1.0);
 }
