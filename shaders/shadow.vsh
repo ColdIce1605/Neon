@@ -6,6 +6,8 @@ out vec4 tint;
 out vec2 baseUV;
 out vec3 vertNormal;
 
+out float isTransparent;
+
 //--// Inputs //-----------------------------------------------------------------------------------------//
 
 layout (location = 0)  in vec4 vertexPosition;
@@ -15,6 +17,8 @@ layout (location = 8)  in vec2 vertexUV;
 layout (location = 9)  in vec2 vertexLightmap;
 layout (location = 10) in vec4 vertexMetadata;
 layout (location = 11) in vec2 quadMidUV;
+
+in vec4 mc_Entity;
 
 //--// Uniforms //---------------------------------------------------------------------------------------//
 
@@ -44,6 +48,25 @@ uniform sampler2D noisetex;
 #include "/lib/gbuffers/displacement.vsh"
 
 //--//
+
+float getIsTransparent(in float materialId) {
+    if(materialId == 160.0) {
+        return 1.0;
+    }
+    if(materialId == 95.0) {
+        return 1.0;
+    }
+    if(materialId == 79.0) {
+        return 1.0;
+    }
+    if(materialId == 8.0) {
+        return 1.0;
+    }
+    if(materialId == 9.0) {
+        return 1.0;
+    }
+    return 0.0;
+}
 
 void main() {
 	//if (abs(vertexMetadata.x - 8.5) < 0.6) {
