@@ -72,7 +72,7 @@ void main() {
 	//--// Fill world struct
 
 	world.globalLightVector = shadowLightPosition * 0.01;
-	world.globalLightColor  = mix(vec3(ILLUMINANCE_MOON), vec3(ILLUMINANCE_SUN), sunAngle < 0.5);
+	world.globalLightColor  = mix(vec3(ILLUMINANCE_MOON), vec3(ILLUMINANCE_SUN), vec3(sunAngle < 0.5));
 
 	world.upVector = upPosition * 0.01;
 }
