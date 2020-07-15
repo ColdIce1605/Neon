@@ -17,7 +17,6 @@ layout (location = 0) out vec4 composite;
 //--// Inputs //-----------------------------------------------------------------------------------------//
 
 in vec2 fragCoord;
-in blank EyeDirectionVector;
 
 //--// Uniforms //---------------------------------------------------------------------------------------//
 
@@ -46,6 +45,13 @@ uniform vec3 sunPosition;
 
 //--//
 
+const float cloudscale = 0.45;
+const float speed = 0.03;
+const vec3 skycolour1 = vec3(0.2, 0.4, 0.6);
+const vec3 skycolour2 = vec3(0.4, 0.7, 1.0);
+const float ambient = 0.15;
+const float intensity = 1.25;
+
 vec3 rayMarch2Dclouds() {
 vec2 screenres = vec2(viewWidth * viewHeight, 1.0);
 vec2 p0 = fragCoord.xy / screenres.xy;
@@ -67,7 +73,7 @@ float q = fbm(p0 * cloudscale * 0.5);
     float T = 0.0;
     
     vec2 p = p0;
-    float dens0 = density(p, aspect, time);
+    float dens0 = density(p, screenres, time);
     float A = dens0;
     
     for(int i = 0; i < steps; ++i)
@@ -75,7 +81,7 @@ float q = fbm(p0 * cloudscale * 0.5);
         float h = float(i) * steps_inv;
         p +=  dp * (1. + h * (hash(p) * 0.75)); // increase step size for each step
         
-   		float dens = density(p, aspect, time);
+   		float dens = density(p, screenres, time);
         T += (clamp((dens0 - dens), 0.0, 1.0) + ambient * steps_inv) * (1. - h);
     }
     
@@ -88,5 +94,5 @@ return C;
 }
 
 void main() {
-
+composite = vec4(rayMarch2Dclouds, 1.0);
 }
