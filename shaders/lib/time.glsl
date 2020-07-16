@@ -21,5 +21,5 @@ float globalTime = (fract(sunAngle - 0.0345175) + mod(worldDay, 127)) * 12e2;
 #else
 uniform float frameTimeCounter;
 
-const float globalTime = frameTimeCounter;
+float globalTime = frameTimeCounter;
 #endif

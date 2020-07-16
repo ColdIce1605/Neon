@@ -15,7 +15,7 @@ vec3 f_fresnel(float cosTheta, vec3 f0) {
 	float n1 = 1.0;
 	vec3 n2 = f0ToIOR(f0);
 
-	vec3 p = sqrt(1.0 - ((n1/n2 * n1/n2) * (1.0 - cosTheta*cosTheta)));
+	vec3 p = sqrt(1.0 - ((n1 / n2 * n1 / n2) * (1.0 - cosTheta * cosTheta)));
 
 	vec3 rs = ((n1 * cosTheta) - (n2 * p))
 	        / ((n1 * cosTheta) + (n2 * p));

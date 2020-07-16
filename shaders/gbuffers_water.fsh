@@ -3,6 +3,7 @@
 //--// Configuration //----------------------------------------------------------------------------------//
 
 #include "/cfg/global.scfg"
+#include "/cfg/water.scfg"
 
 //--// Whatever I end up naming this //------------------------------------------------------------------//
 
@@ -135,10 +136,10 @@ float calculateWaterWaves(vec2 pos) {
 	const mat2 r2 = mat2(cos(rotate.z), sin(rotate.z) / aspect.z, -sin(rotate.z), cos(rotate.z) / aspect.z) * k.z / TAU;
 	const mat2 r3 = mat2(cos(rotate.w), sin(rotate.w) / aspect.w, -sin(rotate.w), cos(rotate.w) / aspect.w) * k.w / TAU;
 
-	vec2 p0 = (r0 * pos) - vec2(omega.x * globalTime, 0.0); p0 += p0.yx * vec2(skewx.x, skewy.x);
-	vec2 p1 = (r1 * pos) - vec2(omega.y * globalTime, 0.0); p1 += p1.yx * vec2(skewx.y, skewy.y);
-	vec2 p2 = (r2 * pos) - vec2(omega.z * globalTime, 0.0); p2 += p2.yx * vec2(skewx.z, skewy.z);
-	vec2 p3 = (r3 * pos) - vec2(omega.w * globalTime, 0.0); p3 += p3.yx * vec2(skewx.w, skewy.w);
+	vec2 p0 = (r0 * pos) - vec2(omega.x * globalTime * WAVE_SPEED_MULT, 0.0); p0 += p0.yx * vec2(skewx.x, skewy.x);
+	vec2 p1 = (r1 * pos) - vec2(omega.y * globalTime * WAVE_SPEED_MULT, 0.0); p1 += p1.yx * vec2(skewx.y, skewy.y);
+	vec2 p2 = (r2 * pos) - vec2(omega.z * globalTime * WAVE_SPEED_MULT, 0.0); p2 += p2.yx * vec2(skewx.z, skewy.z);
+	vec2 p3 = (r3 * pos) - vec2(omega.w * globalTime * WAVE_SPEED_MULT, 0.0); p3 += p3.yx * vec2(skewx.w, skewy.w);
 
 	float wave = 0.0;
 

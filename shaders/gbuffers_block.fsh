@@ -31,6 +31,11 @@ void main() {
 	vec4 baseTex = texture(base, baseUV) * tint;
 
 	vec4 diff = vec4(baseTex.rgb, 254.0 / 255.0);
+	
+	#ifdef WHITEWORLD
+	diff = vec4(1.0);
+	#endif
+	
 	vec4 spec = texture(specular, baseUV);
 	vec4 emis = vec4(0.0);
 
