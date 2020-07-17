@@ -349,7 +349,7 @@ void main() {
 
 		vec4 trans = texture(colortex2, fragCoord);
 		composite = mix(composite, trans.rgb, trans.a);
-
+			composite = max(composite, 0.0);
 		debugExit(); return;
 	}
 
@@ -385,6 +385,7 @@ void main() {
 
 	vec4 trans = texture(colortex2, fragCoord);
 	composite = mix(composite, trans.rgb, trans.a);
+	composite = max(composite, 0.0);
 
 	debugExit();
 }

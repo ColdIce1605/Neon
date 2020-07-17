@@ -11,9 +11,9 @@ out vec4 metadata;
 
 //--// Inputs //-----------------------------------------------------------------------------------------//
 
-layout (location = 0)  in vec4 vertexPosition;
+//layout (location = 0)  in vec4 vertexPosition;
 layout (location = 2)  in vec3 vertexNormal;
-layout (location = 3)  in vec4 vertexColor;
+//layout (location = 3)  in vec4 vertexColor;
 layout (location = 8)  in vec2 vertexUV;
 layout (location = 9)  in vec2 vertexLightmap;
 layout (location = 10) in vec4 vertexMetadata;
@@ -70,7 +70,7 @@ void main() {
 	gl_Position = gbufferProjection * gl_Position;
 
 	tbnMatrix = calculateTBN();
-	tint      = vertexColor;
+	tint      = gl_Color;
 	baseUV    = vertexUV;
 	lmUV      = vertexLightmap / 240.0;
 	metadata  = vertexMetadata;
