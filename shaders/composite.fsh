@@ -383,7 +383,7 @@ void main() {
 	}
 	else
 	#endif
-	gi = vec3(0.0);
+	//gi = vec3(0.0);
 
 	composite = texture(colortex4, fragCoord).rgb; // Stars, sun, moon
 	{ // Atmosphere

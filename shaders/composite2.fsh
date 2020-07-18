@@ -55,6 +55,8 @@ uniform float eyeAltitude;
 uniform ivec2 eyeBrightness;
 
 uniform float sunAngle;
+uniform float viewHeight;
+uniform float viewWidth;
 
 uniform vec3 skyColor;
 
@@ -167,7 +169,7 @@ vec3 calculateReflection(surfaceStruct surface) {
 
 			rayDir = reflect(rayDir, hitNormal);
 
-			if (raytraceIntersection(hitPos, rayDir, hitCoord, hitPos)) {
+			if (raytraceIntersection(hitPos, rayDir, hitCoord, surface.positionScreen)) {
 				reflection += texture(colortex4, hitCoord.st).rgb * reflColor;
 			} else if (skyVis > 0) {
 				reflection += getSky(mat3(gbufferModelViewInverse) * rayDir) * skyVis * reflColor;
@@ -214,15 +216,14 @@ vec3 calculateWaterShading(surfaceStruct surface) {
 		vec3 rayDir = reflect(viewDir, normal);
 
 		vec3 hitCoord;
-		vec3 hitPos;
-		if (raytraceIntersection(viewPos, rayDir, hitCoord, hitPos)) {
+		if (raytraceIntersection(viewPos, rayDir, hitCoord, screenPos)) {
 			reflection = texture(colortex4, hitCoord.xy).rgb;
 		} else if (skyVis > 0 && isEyeInWater == 0) {
 			reflection = getSky(mat3(gbufferModelViewInverse) * rayDir) * skyVis;
 		}
 
 		if (isEyeInWater == 1) {
-			reflection = waterFog(reflection, distance(viewPos, hitPos));
+			//reflection = waterFog(reflection, distance(viewPos, hitPos));
 
 			// Needed because hitPos sometimes gets bad values.
 			if (isnan(reflection.r)) reflection = vec3(0.0);

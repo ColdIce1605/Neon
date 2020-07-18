@@ -79,15 +79,16 @@ void tonemap(inout vec3 color) {
 
 void ACESFitted(inout vec3 color)
 {
-    color = productof(ACESInputMat, color);
+    color = (color * ACESInputMat);
 
     // Apply RRT and ODT
     color = RRTAndODTFit(color);
 
-    color = productof(ACESOutputMat, color);
+    color = (color * ACESOutputMat);
 
     // Clamp to [0, 1]
     color = saturate(color);
+	color = pow(color, vec3(0.5 / GAMMA));
 }
 
 void vignette(inout vec3 color) {
@@ -122,8 +123,8 @@ void main() {
 
 	lowLightAdapt(finalColor);
 
-	tonemap(finalColor);
-	//ACESFitted(finalColor);
+	//tonemap(finalColor);
+	ACESFitted(finalColor);
 	dither(finalColor);
 
 	debugExit();
