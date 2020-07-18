@@ -187,7 +187,6 @@ vec3 calculateWaterNormal(vec3 pos, vec3 viewDir) {
 
 void main() {
 	if (abs(blockID) < 0.6) {  // old code was (abs(blockID - 8.5) < 0.6)
-	//if (mc_Entity.x == 1039) {
 		vec3 viewDir = normalize(positionView) * tbnMatrix;
 		data0 = vec4(0.0, 0.0, 0.0, 0.2);
 		data1.rg = packNormal(calculateWaterNormal(positionLocal + cameraPosition, viewDir));

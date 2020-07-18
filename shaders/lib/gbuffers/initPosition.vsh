@@ -1,3 +1,3 @@
 vec4 initPosition() {
-	return gl_ModelViewMatrix * gl_Vertex;
+	return gl_ModelViewMatrix * vertexPosition;
 }
