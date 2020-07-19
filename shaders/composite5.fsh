@@ -3,6 +3,8 @@
 //--// Configuration //----------------------------------------------------------------------------------//
 
 #include "/cfg/global.scfg"
+#include "/cfg/clouds.scfg"
+
 
 #define COMPOSITE 5
 
@@ -22,11 +24,18 @@ in vec2 fragCoord;
 
 
 uniform sampler2D colortex4;
+uniform sampler2D depthtex0;
 
-uniform int frameCounter;
-
+uniform float frameTimeCounter;
+uniform float sunAngle;
+uniform float far;
+uniform float rainStrength;
 uniform float viewWidth;
 uniform float viewHeight;
+
+uniform mat4 gbufferModelViewInverse;
+uniform mat4 gbufferProjection;
+uniform mat4 gbufferProjectionInverse;
 
 uniform vec3 cameraPosition;
 uniform vec3 sunPosition;
@@ -49,9 +58,6 @@ uniform vec3 sunPosition;
 //Created by ming in 2019-03-28
 //Based on 2D Clouds by drift  https://www.shadertoy.com/view/4tdSWr
 const float cloudscale = 0.45;
-const float speed = 0.03;
-const vec3 skycolor1 = vec3(0.2, 0.4, 0.6);
-const vec3 skycolor2 = vec3(0.4, 0.7, 1.0);
 const float ambient = 0.15;
 const float intensity = 1.25;
 
@@ -124,55 +130,32 @@ float density(vec2 p, vec2 aspect, vec2 time)
     
 }
 
-vec3 rayMarch2Dclouds() {
-vec2 screenres = vec2(viewWidth * viewHeight, 1.0);
-vec2 p0 = fragCoord.xy / screenres.xy;
-float q = fbm(p0 * cloudscale *0.5);
-    
-     
-    float t = (frameCounter + 45.0) * speed;
-    vec2 time = vec2(q + t * 1.0, q + t * 0.25);
-	
-    vec2 dist = (vec2(16.) / screenres);
-    const int steps = 8;
-    float steps_inv = 1.0 / float(steps);
-    
-    vec2 sun_dir = ((sunPosition.xy) * 2.0 - 1.0);
-    
-    vec2 dp = normalize(sun_dir) * dist * steps_inv;
-    
-    float T = 0.0;
-    
-    vec2 p = p0;
-    float dens0 = density(p, screenres, time);
-    float A = dens0;
-    
-    for(int i = 0; i < steps; ++i)
-    {
-        float h = float(i) * steps_inv;
-        p +=  dp * (1. + h * (hash(p) * 0.75)); // increase step size for each step
-        
-   		float dens = density(p, screenres, time);
-        T += (clamp((dens0 - dens), 0.0, 1.0) + ambient * steps_inv) * (1. - h);
-    }
-	
-	vec3 skycolor = mix(skycolor2, skycolor1, p0.y);
-    
-    T = clamp(T, 0.0, 1.0);
-    vec3 C = vec3(0.0);
-    C = vec3(T) * intensity;
-    C = vec3(1.) - (vec3(1.) - C) * (vec3(1.) - skycolor * 0.5);
-	
-	    float A2 = smoothstep(0.2, 1.0, A * A);
-		
-		vec3 R =  mix(skycolor, C, A2);
 
-return R;
-}
 
 void main() {
- vec3 clouds = rayMarch2Dclouds();
  vec4 color = texture(colortex4, fragCoord);
-     clouds = mix(clouds, color.rgb, 1.0);
-	composite = vec4(clouds, 1.0);
+     float depth = texture2D(depthtex0, fragCoord).x;
+
+
+    vec3 screenSpace = vec3(fragCoord, depth);
+    vec4 t = gbufferProjectionInverse * vec4(screenSpace * 2.0 - 1.0, 1.0);
+    vec3 viewSpace = t.xyz / t.w;
+    vec3 playerSpace = mat3(gbufferModelViewInverse) * viewSpace;
+    vec3 feetPlayerSpace = playerSpace + gbufferModelViewInverse[3].xyz;
+    vec3 worldSpace = feetPlayerSpace + cameraPosition;
+
+
+    #ifdef FlatClouds
+        if (depth == 1.0 && feetPlayerSpace.y > 15.0)
+        { 
+            vec2 cloudPlane = (playerSpace.xz / (playerSpace.y + 500 - normalize(cameraPosition.y)));
+            vec2 aspect = vec2(viewWidth / viewHeight);
+            float noise = density(cloudPlane, aspect, vec2(frameTimeCounter) * CLOUD_SPEED);
+            float cloudFade = length(viewSpace) / far;
+            vec3 cloudColor = mix(vec3(1.0), vec3(0.2), smoothstep(0.46, 0.52, sunAngle));
+            color.rgb = mix(color.rgb, cloudColor * (1.0 - (rainStrength * 0.25)), (noise * 0.5 + 0.5) * 0.6);  
+        }
+    #endif
+
+	composite = vec4(color);
 }
