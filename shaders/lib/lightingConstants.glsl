@@ -13,5 +13,8 @@
 // Will be replaced at some point
 #define ILLUMINANCE_SKY  7e3
 
-// This value needs a lot of tuning. It also should really be LUMINANCE_BLOCK, but I'll change that later.
-#define LUMINANCE_BLOCK 50
+// This value needs a lot of tuning. It also should really be LUMINANCE_BLOCK, but I'll change that later. 
+//The light of a candle is 13 lux, the question is how big is minecraft's torch compaired to a real life candle.
+///A page on the lighting model of a Cemetery says that the torch there can do 100 lux or 1500 candelas 
+// https://www.researchgate.net/figure/Torch-with-intensity-of-1500-candelas-providing-flame-lighting-of-approximately-100-lux_fig3_220955300
+#define LUMINANCE_BLOCK 68
