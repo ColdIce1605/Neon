@@ -6,10 +6,11 @@
 
 //--// Outputs //----------------------------------------------------------------------------------------//
 
-/* DRAWBUFFERS:01 */
+/* DRAWBUFFERS:017 */
 
 layout (location = 0) out vec4 packedMaterial;
 layout (location = 1) out vec4 packedData;
+//layout (location = 2) out vec4 packedSky;
 
 //--// Inputs //-----------------------------------------------------------------------------------------//
 
@@ -40,4 +41,5 @@ void main() {
 	packedData.rg = packNormal(tbnMatrix[2]);
 	packedData.b = uintBitsToFloat(packUnorm4x8(vec4(sqrt(lmUV), 1.0, 0.0)));
 	packedData.a = 1.0;
+	//packedSky = vec4(uintBitsToFloat(uvec3(packUnorm4x8(diff), packUnorm4x8(spec), packUnorm4x8(emis))), 1.0);
 }

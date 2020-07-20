@@ -58,6 +58,7 @@ uniform vec3 sunPosition;
 //Created by ming in 2019-03-28
 //Based on 2D Clouds by drift  https://www.shadertoy.com/view/4tdSWr
 const float cloudscale = 0.45;
+const float speed = 0.03;
 const float ambient = 0.15;
 const float intensity = 1.25;
 
@@ -150,7 +151,7 @@ void main() {
         { 
             vec2 cloudPlane = (playerSpace.xz / (playerSpace.y + 500 - normalize(cameraPosition.y)));
             vec2 aspect = vec2(viewWidth / viewHeight);
-            float noise = density(cloudPlane, aspect, vec2(frameTimeCounter) * CLOUD_SPEED);
+            float noise = density(cloudPlane, aspect, vec2(frameTimeCounter) * speed);
             float cloudFade = length(viewSpace) / far;
             vec3 cloudColor = mix(vec3(1.0), vec3(0.2), smoothstep(0.46, 0.52, sunAngle));
             color.rgb = mix(color.rgb, cloudColor * (1.0 - (rainStrength * 0.25)), (noise * 0.5 + 0.5) * 0.6);  

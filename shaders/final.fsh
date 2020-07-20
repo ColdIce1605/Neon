@@ -119,12 +119,12 @@ void main() {
 	applyBloom(finalColor);
 	#endif
 	
-	vignette(finalColor);
-
 	lowLightAdapt(finalColor);
 
 	//tonemap(finalColor);
 	ACESFitted(finalColor);
+	
+	vignette(finalColor);
 	dither(finalColor);
 
 	debugExit();
