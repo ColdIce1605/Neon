@@ -66,7 +66,7 @@ void applyBloom(inout vec3 color) {
 
 void lowLightAdapt(inout vec3 color) { 
 	const float maxLumaRange = 2.5;
-	const float minLumaRange = 0.0000005;
+	const float minLumaRange = 0.00001;
   float rod = dot(color, vec3(15, 50, 35)); 
   rod *= 1.0 - pow(smoothstep(0.0, 4.0, rod), 0.01); 
 
