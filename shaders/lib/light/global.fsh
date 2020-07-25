@@ -160,9 +160,7 @@ float calculateHSSRS(vec3 viewSpace, vec3 lightVector, vec3 coord) {
 	vec3 increment = lightVector * HSSRS_RAY_LENGTH / HSSRS_RAY_STEPS;
 
 	#ifdef HSSRS_TYPE
-		#if SHADOW_SAMPLING_TYPE == 0
-		return 1.0;
-		#elif SHADOW_SAMPLING_TYPE == 1
+		#if SHADOW_SAMPLING_TYPE == 1
 			const vec2[12] offset = vec2[12](
 								vec2(-0.5, 1.5), vec2( 0.5, 1.5),
 				vec2(-1.5, 0.5), vec2(-0.5, 0.5), vec2( 0.5, 0.5), vec2( 1.5, 0.5),
@@ -170,15 +168,8 @@ float calculateHSSRS(vec3 viewSpace, vec3 lightVector, vec3 coord) {
 								vec2(-0.5,-1.5), vec2( 0.5,-1.5)
 			);
 
-			float shadow = 0.0;
-			for (int i = 0; i < offset.length(); i++) {
-				shadow += texture(shadowtex1, coord + vec3(offset[i] / resolution, 0));
-			}
-			shadow /= offset.length(); shadow *= shadow;
-
-			return shadow;
 		#elif SHADOW_SAMPLING_TYPE == 2
-		
+
 		#endif
 	#endif
 
