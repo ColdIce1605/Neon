@@ -171,8 +171,8 @@ vec3 calculateWaterNormal(vec3 pos, vec3 viewDir) {
 	                 calculateWaterWaves(pos.xy - vec2(0.1,-0.1)));
 	     diff = (calculateWaterWaves(pos.xy - 0.1) - diff) * 5.0;
 
-	vec3 normal = tbnMatrix * vec3(diff, sqrt(1.0 - saturate(dot(diff, diff))));
-	     normal = mix(tbnMatrix[2], normal, pow(saturate(dot(normalize(-positionView), normal)), 0.2));
+	vec3 normal = tbnMatrix * vec3(diff, sqrt(1.0 - clamp01(dot(diff, diff))));
+	     normal = mix(tbnMatrix[2], normal, pow(clamp01(dot(normalize(-positionView), normal)), 0.2));
 
 	return normal;
 }

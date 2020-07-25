@@ -209,7 +209,7 @@ vec3 calculateWaterShading(surfaceStruct surface) {
 	vec3  normal = unpackNormal(tex3Raw.rg);
 	float skyVis = eyeBrightness.y / 240.0; // temp
 
-	vec3 f = saturate(f_fresnel(dot(normal, -viewDir), vec3(0.02)));
+	vec3 f = clamp01(f_fresnel(dot(normal, -viewDir), vec3(0.02)));
 
 	// Reflections
 	vec3 reflection = vec3(0.0); {
@@ -234,7 +234,7 @@ vec3 calculateWaterShading(surfaceStruct surface) {
 	vec3 refraction; {
 		vec3 rayDir = refract(viewDir, normal, 0.75);
 
-		float refractAmount = saturate(distance(viewPos, surface.positionView));
+		float refractAmount = clamp01(distance(viewPos, surface.positionView));
 
 		vec3 hitPos   = rayDir * refractAmount + viewPos;
 		vec3 hitCoord = viewSpaceToScreenSpace(hitPos);
@@ -365,7 +365,7 @@ void main() {
 
 	#if REFLECTION_SAMPLES > 0
 	if (any(greaterThan(surface.mat.specular, vec3(0.0))) && !waterMask) {
-		composite *= saturate(1.0 - f_fresnel(max(dot(surface.normal, -normalize(surface.positionView)), 0.0), surface.mat.specular)*surface.mat.roughness);
+		composite *= clamp01(1.0 - f_fresnel(max(dot(surface.normal, -normalize(surface.positionView)), 0.0), surface.mat.specular)*surface.mat.roughness);
 		composite += calculateReflection(surface) * (1.0 - surface.mat.roughness);
 	}
 	#endif
