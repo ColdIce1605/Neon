@@ -28,7 +28,7 @@ material getPackedMaterial(sampler2D pack, vec2 coord) {
 	m.diffuse   = pow(diff.rgb, vec3(2.2));
 	m.specular  = vec3(spec.r * spec.r);
 	m.emission  = vec3(0.0);
-	m.roughness = 1.0 - spec.b; m.roughness *= m.roughness;
+	m.roughness = 1.0 - spec.r; m.roughness *= m.roughness;
 
 	return m;
 }
@@ -42,7 +42,7 @@ material getMaterial(sampler2D diffuse, sampler2D specular, vec2 coord) {
 	m.diffuse   = pow(diff.rgb, vec3(2.2));
 	m.specular  = vec3(spec.r * spec.r);
 	m.emission  = vec3(0.0);
-	m.roughness = 1.0 - spec.b; m.roughness *= m.roughness;
+	m.roughness = 1.0 - spec.r; m.roughness *= m.roughness;
 
 	return m;
 }

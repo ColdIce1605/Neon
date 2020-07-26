@@ -25,6 +25,7 @@ in float avglum;
 //--// Uniforms //---------------------------------------------------------------------------------------//
 
 uniform sampler2D colortex4;
+uniform sampler2D colortex6;
 
 #ifdef BLOOM
 uniform float viewWidth, viewHeight;
