@@ -23,4 +23,9 @@ void main() {
 	gl_Position.zw = vec2(1.0);
 
 	fragCoord = vertexUV;
+
+	float prevlum = texture(colortex6, vec2(0.0)).a;
+
+	avglum = dot(textureLod(colortex4, vec2(0.5), 10).rgb, vec3(1.0 / 3.0));
+	avglum = mix(avglum, prevlum, 0.9);
 }
