@@ -27,7 +27,7 @@ const int colortex2Format = RGBA32F; // Transparent surfaces
 const int colortex3Format = RGBA32F; // Water data
 const int colortex4Format = RGB32F;  // Current render
 const int colortex5Format = RGB32F;  // Data sent to next pass
-const int colortex6Format = RGBA32F; //TAA and other temporal data
+const int colortex6Format = RGB32F; //TAA and other temporal data
 
 const int colortex7Format = RGB32F; // Sky
 */

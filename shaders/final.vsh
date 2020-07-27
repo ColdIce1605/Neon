@@ -14,7 +14,6 @@ layout (location = 8) in vec2 vertexUV;
 //--// Uniforms //---------------------------------------------------------------------------------------//
 
 uniform sampler2D colortex4;
-uniform sampler2D colortex6;
 
 //--// Functions //--------------------------------------------------------------------------------------//
 
@@ -23,4 +22,6 @@ void main() {
 	gl_Position.zw = vec2(1.0);
 
 	fragCoord = vertexUV;
+
+	avglum = dot(textureLod(colortex4, vec2(0.5), 10).rgb, vec3(1.0 / 3.0));
 }
