@@ -23,4 +23,6 @@ void main() {
 	gl_Position.zw = vec2(1.0);
 
 	fragCoord = vertexUV;
+
+	avglum = dot(textureLod(colortex4, vec2(0.5), 10).rgb, vec3(1.0 / 3.0));
 }

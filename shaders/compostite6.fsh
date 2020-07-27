@@ -4,7 +4,7 @@
 
 #include "/cfg/global.scfg"
 
-#define FINAL
+#define COMPOSITE 6
 
 #include "/cfg/bloom.scfg"
 
@@ -28,8 +28,6 @@ in float avglum;
 uniform sampler2D colortex4;
 uniform sampler2D colortex6;
 
-uniform float blindness;
-
 //--// Functions //--------------------------------------------------------------------------------------//
 
 #include "/lib/debug.glsl"
@@ -38,21 +36,9 @@ uniform float blindness;
 
 //--//
 
-void lowLightAdapt(inout vec3 color) { 
-	const float maxLumaRange = 2.5;
-	const float minLumaRange = 0.00001;
-  float rod = dot(color, vec3(15, 50, 35)); 
-  rod *= 1.0 - pow(smoothstep(0.0, 4.0, rod), 0.01); 
-
-  color = (rod + color) * clamp(0.3 / avglum, minLumaRange, maxLumaRange); 
-}
-
 void main() {
 	composite = texture(colortex4, fragCoord).rgb;
 	temporalBuffer = vec4(0.0, 0.0, 0.0, avglum);
-
-	lowLightAdapt(finalColor);
-
 
 	debugExit();
 }
