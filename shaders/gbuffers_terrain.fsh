@@ -3,6 +3,7 @@
 //--// Configuration //----------------------------------------------------------------------------------//
 
 #include "/cfg/global.scfg"
+#include "/cfg/debug.scfg"
 
 #include "/cfg/parallax.scfg"
 
@@ -129,6 +130,15 @@ void main() {
 	//--//
 
 	packedMaterial = vec4(uintBitsToFloat(uvec3(packUnorm4x8(diff), packUnorm4x8(spec), packUnorm4x8(emis))), 1.0);
+	#ifdef ONLY_COLOR
+	packedMaterial = vec4(uintBitsToFloat(uvec3(packUnorm4x8(diff), packUnorm4x8(vec4(0.0)), packUnorm4x8(emis))), 1.0);
+	#endif
+	#ifdef DEBUG_NORMAL
+	packedMaterial = vec4(uintBitsToFloat(uvec3(packUnorm4x8(getNormal(pCoord.st).xyzz), packUnorm4x8(vec4(0.0)), packUnorm4x8(emis))), 1.0);
+	#endif
+	#ifdef DEBUG_SPEC
+	packedMaterial = vec4(uintBitsToFloat(uvec3(packUnorm4x8(spec), packUnorm4x8(vec4(0.0)), packUnorm4x8(emis))), 1.0);
+	#endif
 
 	packedData.rg = packNormal(getNormal(pCoord.st));
 	packedData.b = uintBitsToFloat(packUnorm4x8(vec4(sqrt(lmUV), calculateParallaxSelfShadow(pCoord, normalize(shadowLightPosition * tbnMatrix)), 0.0)));

@@ -95,7 +95,7 @@ void ACESFitted(inout vec3 color)
 }
 
 void vignette(inout vec3 color) {
-    float dist = distance(fragCoord, vec2(0.5)) * Vignette_Strength;
+    float dist = distance(fragCoord, vec2(0.5)) * VIGNETTE_STRENGTH;
 
     dist = pow(dist / 2.0, 1.1);
 
