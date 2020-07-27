@@ -20,6 +20,8 @@ layout (location = 0) out vec3 finalColor;
 
 in vec2 fragCoord;
 
+in float avglum;
+
 //--// Uniforms //---------------------------------------------------------------------------------------//
 
 uniform sampler2D colortex4;
@@ -31,8 +33,6 @@ uniform sampler2D colortex5;
 #endif
 
 uniform float blindness;
-
-in float avglum;
 
 //--// Functions //--------------------------------------------------------------------------------------//
 
@@ -68,14 +68,11 @@ void applyBloom(inout vec3 color) {
 void lowLightAdapt(inout vec3 color) { 
 	const float maxLumaRange = 2.5;
 	const float minLumaRange = 0.00001;
-
-	float prevlum = texture(colortex6, vec2(0.0)).a;
-
   float rod = dot(color, vec3(15, 50, 35)); 
   rod *= 1.0 - pow(smoothstep(0.0, 4.0, rod), 0.01); 
 
   color = (rod + color) * clamp(0.3 / avglum, minLumaRange, maxLumaRange); 
-}
+} 
 
 void tonemap(inout vec3 color) {
 	color *= color;
@@ -124,7 +121,7 @@ void main() {
 	#ifdef BLOOM
 	applyBloom(finalColor);
 	#endif
-
+	
 	lowLightAdapt(finalColor);
 
 	tonemap(finalColor);
