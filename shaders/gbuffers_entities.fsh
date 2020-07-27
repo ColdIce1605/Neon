@@ -31,10 +31,10 @@ uniform vec4 entityColor;
 void main() {
 	vec4 baseTex = texture(base, baseUV) * tint;
 	baseTex.rgb = mix(baseTex.rgb, baseTex.rgb * entityColor.rgb, entityColor.a);
-	#if entityId != 2000
-	if (baseTex.a < 0.102) discard; // ~ 26 / 255
-	#elif entityId == 2000
-	if (baseTex.a < 0.0) discard;
+	#if entityId == 2000
+	if (baseTex.a < 0.0) discard; // ~ 26 / 255
+	#else
+	if (baseTex.a < 0.102) discard;
 	#endif
 	vec4 diff = vec4(baseTex.rgb, 254.0 / 255.0);
 	vec4 spec = texture(specular, baseUV);
