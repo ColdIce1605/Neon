@@ -19,15 +19,13 @@ const int   shadowMapResolution = 2048; // [1024 2048 4096 8192 16384]
 const float shadowDistance      = 16.0; // [16.0 32.0]
 
 //--// Texture formats
-const bool colortex6Clear = false;
 /*
 const int colortex0Format = RG32F;   // Material
 const int colortex1Format = RGB32F;  // Normals, lightmap
 const int colortex2Format = RGBA32F; // Transparent surfaces
 const int colortex3Format = RGBA32F; // Water data
 const int colortex4Format = RGB32F;  // Current render
-const int colortex5Format = RGB32F;  // Data sent to next pass
-const int colortex6Format = RGB32F; //TAA and other temporal data
+const int colortex5Format = RGBA32F;  // Data sent to next pass
 
 const int colortex7Format = RGB32F; // Sky
 */
