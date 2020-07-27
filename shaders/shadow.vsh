@@ -22,6 +22,8 @@ in vec4 mc_Entity;
 
 //--// Uniforms //---------------------------------------------------------------------------------------//
 
+uniform int entityId;
+
 uniform float rainStrength;
 
 uniform vec3 cameraPosition;
@@ -63,6 +65,9 @@ float getIsTransparent(in float materialId) {
         return 1.0;
     }
     if(materialId == 9.0) {
+        return 1.0;
+    }
+    if(entityId == 2000) {
         return 1.0;
     }
     return 0.0;

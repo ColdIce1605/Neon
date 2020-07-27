@@ -57,7 +57,7 @@ uniform vec3 sunPosition;
 //https://www.shadertoy.com/view/Wd2XD1
 //Created by ming in 2019-03-28
 //Based on 2D Clouds by drift  https://www.shadertoy.com/view/4tdSWr
-const float cloudscale = 0.45;
+const float cloudscale = 1.45;
 const float speed = 0.03;
 const float ambient = 0.15;
 const float intensity = 1.25;
