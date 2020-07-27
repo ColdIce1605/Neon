@@ -146,7 +146,7 @@ void main() {
     vec3 worldSpace = feetPlayerSpace + cameraPosition;
 
 
-    #ifdef FlatClouds
+    #ifdef FLATCLOUDS
         if (depth == 1.0 && feetPlayerSpace.y > 15.0)
         { 
             vec2 cloudPlane = (playerSpace.xz / (playerSpace.y + 500 - normalize(cameraPosition.y)));
