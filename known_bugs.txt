@@ -2,3 +2,4 @@
 ! Disclaimer Not all known bugs will be on the list.
 1: Hand is simi working
 2: THE LIGHTMAPS ARE FUCKED
+3: HSSRS is effected my POM
