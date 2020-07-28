@@ -1,7 +1,7 @@
-#version 120
+#version 420 compatibility
 
-varying vec4 color;
-varying vec2 uv;
+out vec4 color;
+out vec2 uv;
 
 void main() {
     color = gl_Color;

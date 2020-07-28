@@ -1,8 +1,8 @@
-#version 120
+#version 420 compatibility
 
-varying vec2 lmcoord;
-varying vec2 texcoord;
-varying vec4 glcolor;
+out vec2 lmcoord;
+out vec2 texcoord;
+out vec4 glcolor;
 
 void main() {
 	gl_Position = ftransform();

@@ -1,11 +1,11 @@
-#version 120
+#version 420
 
 uniform sampler2D lightmap;
 uniform sampler2D texture;
 
-varying vec2 lmcoord;
-varying vec2 texcoord;
-varying vec4 glcolor;
+in vec2 lmcoord;
+in vec2 texcoord;
+in vec4 glcolor;
 
 void main() {
 	vec4 color = texture2D(texture, texcoord) * glcolor;

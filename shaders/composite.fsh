@@ -1,8 +1,8 @@
-#version 120
+#version 420
 
 uniform sampler2D gcolor;
 
-varying vec2 texcoord;
+in vec2 texcoord;
 
 void main() {
 	vec3 color = texture2D(gcolor, texcoord).rgb;

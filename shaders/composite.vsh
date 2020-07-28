@@ -1,6 +1,6 @@
-#version 120
+#version 420 compatibility
 
-varying vec2 texcoord;
+out vec2 texcoord;
 
 void main() {
 	gl_Position = ftransform();
