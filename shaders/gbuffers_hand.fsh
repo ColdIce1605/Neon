@@ -3,6 +3,8 @@
 //--// Configuration //----------------------------------------------------------------------------------//
 
 #include "/cfg/global.scfg"
+#include "/cfg/debug.scfg"
+
 
 //--// Outputs //----------------------------------------------------------------------------------------//
 
@@ -35,6 +37,13 @@ void main() {
 	//--//
 
 	packedMaterial = vec4(uintBitsToFloat(uvec3(packUnorm4x8(diff), packUnorm4x8(spec), packUnorm4x8(emis))), 1.0);
+	#ifdef ONLY_COLOR
+	packedMaterial = vec4(uintBitsToFloat(uvec3(packUnorm4x8(diff), packUnorm4x8(vec4(0.0)), packUnorm4x8(emis))), 1.0);
+	#endif
+//TODO Debug normal
+	#ifdef DEBUG_SPEC
+	packedMaterial = vec4(uintBitsToFloat(uvec3(packUnorm4x8(spec), packUnorm4x8(vec4(0.0)), packUnorm4x8(emis))), 1.0);
+	#endif
 
 	packedData.rg = packNormal(tbnMatrix[2]);
 	packedData.b = uintBitsToFloat(packUnorm4x8(vec4(sqrt(lmUV), 1.0, 0.0)));
