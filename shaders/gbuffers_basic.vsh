@@ -1,24 +1,12 @@
-#version 420 compatibility
+#version 120
 
-//--// Outputs //----------------------------------------------------------------------------------------//
-
-out vec4 color;
-
-//--// Inputs //-----------------------------------------------------------------------------------------//
-
-layout (location = 0) in vec4 vertexPosition;
-layout (location = 3) in vec4 vertexColor;
-
-//--// Uniforms //---------------------------------------------------------------------------------------//
-
-//uniform mat4 gbufferProjection;
-
-//--// Functions //--------------------------------------------------------------------------------------//
-
-#include "/lib/gbuffers/initPosition.vsh"
+varying vec2 lmcoord;
+varying vec2 texcoord;
+varying vec4 glcolor;
 
 void main() {
-	gl_Position = gl_ProjectionMatrix * initPosition();
-
-	color = vertexColor;
+	gl_Position = ftransform();
+	texcoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
+	lmcoord  = (gl_TextureMatrix[1] * gl_MultiTexCoord1).xy;
+	glcolor = gl_Color;
 }

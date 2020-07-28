@@ -1,5 +1,0 @@
-#define FOG
-#define FOG_MULT 1.0 // Fog scattering multiplier. 1.0 is equivalent to Earth's atmosphere, but you may find that higher values look better. [1.0 2.0 3.0]
-
-#define VL
-#define VL_STEPS 8 // Steps to take. [4 6 8 12 16]

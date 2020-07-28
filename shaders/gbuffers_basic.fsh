@@ -1,20 +1,16 @@
-#version 420
+#version 120
 
-//--// Outputs //----------------------------------------------------------------------------------------//
+uniform sampler2D lightmap;
+uniform sampler2D texture;
 
-/* DRAWBUFFERS:0 */
-
-layout (location = 0) out vec4 packedMaterial;
-
-//--// Inputs //-----------------------------------------------------------------------------------------//
-
-in vec4 color;
-
-//--// Functions //--------------------------------------------------------------------------------------//
+varying vec2 lmcoord;
+varying vec2 texcoord;
+varying vec4 glcolor;
 
 void main() {
-	packedMaterial.r = uintBitsToFloat(packUnorm4x8(color));
-	packedMaterial.g = uintBitsToFloat(0xff000000);
-	packedMaterial.b = uintBitsToFloat(0xff000000);
-	packedMaterial.a = 1.0;
+	vec4 color = texture2D(texture, texcoord) * glcolor;
+	color *= texture2D(lightmap, lmcoord);
+
+/* DRAWBUFFERS:0 */
+	gl_FragData[0] = color; //gcolor
 }

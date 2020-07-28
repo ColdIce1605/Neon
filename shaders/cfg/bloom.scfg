@@ -1,2 +1,0 @@
-#define BLOOM
-#define BLOOM_AMOUNT 0.25 // Adjusts the blend between bloom and no bloom. [0.15 0.20 0.25 0.30 0.35]

@@ -1,49 +1,16 @@
-#version 420
+#version 120
 
-//--// Configuration //----------------------------------------------------------------------------------//
+uniform sampler2D lightmap;
+uniform sampler2D texture;
 
-#include "/cfg/global.scfg"
-
-//--// Outputs //----------------------------------------------------------------------------------------//
-
-/* DRAWBUFFERS:01 */
-
-layout (location = 0) out vec4 packedMaterial;
-layout (location = 1) out vec4 packedData;
-
-//--// Inputs //-----------------------------------------------------------------------------------------//
-
-in mat3 tbnMatrix;
-in vec4 tint;
-in vec2 baseUV, lmUV;
-
-//--// Uniforms //---------------------------------------------------------------------------------------//
-
-uniform vec3 shadowLightPosition;
-
-uniform sampler2D base, specular;
-
-//--// Functions //--------------------------------------------------------------------------------------//
-
-#include "/lib/util/packing/normal.glsl"
+varying vec2 lmcoord;
+varying vec2 texcoord;
+varying vec4 glcolor;
 
 void main() {
-	vec4 baseTex = texture(base, baseUV) * tint;
+	vec4 color = texture2D(texture, texcoord) * glcolor;
+	color *= texture2D(lightmap, lmcoord);
 
-	vec4 diff = vec4(baseTex.rgb, 254.0 / 255.0);
-	
-	#ifdef WHITEWORLD
-	diff = vec4(1.0);
-	#endif
-	
-	vec4 spec = texture(specular, baseUV);
-	vec4 emis = vec4(0.0);
-
-	//--//
-
-	packedMaterial = vec4(uintBitsToFloat(uvec3(packUnorm4x8(diff), packUnorm4x8(spec), packUnorm4x8(emis))), 1.0);
-
-	packedData.rg = packNormal(tbnMatrix[2]);
-	packedData.b = uintBitsToFloat(packUnorm4x8(vec4(sqrt(lmUV), 1.0, 0.0)));
-	packedData.a = 1.0;
+/* DRAWBUFFERS:0 */
+	gl_FragData[0] = color; //gcolor
 }

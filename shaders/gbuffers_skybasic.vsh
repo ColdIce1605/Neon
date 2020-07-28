@@ -1,15 +1,8 @@
-#version 420 compatibility
+#version 120
 
-//--// Inputs //-----------------------------------------------------------------------------------------//
-
-layout (location = 0) in vec4 position;
-
-//--// Functions //--------------------------------------------------------------------------------------//
+varying vec4 starData; //rgb = star color, a = flag for weather or not this pixel is a star.
 
 void main() {
-	float posLen = length(position.xyz);
-
-	// Only draw stars
-	if (posLen > 100.0 && posLen < 100.1) gl_Position = gl_ProjectionMatrix * gl_ModelViewMatrix * position;
-	else gl_Position = vec4(1.0);
+	gl_Position = ftransform();
+	starData = vec4(gl_Color.rgb, float(gl_Color.r == gl_Color.g && gl_Color.g == gl_Color.b && gl_Color.r > 0.0));
 }
