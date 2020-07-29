@@ -34,7 +34,7 @@ uniform sampler2D normals;
 
 //--// Global constants & variables //-------------------------------------------------------------------//
 
-#ifdef PM
+#ifdef POM
 float lodLevel = textureQueryLod(base, baseUV).x;
 #define texture(x, y) textureLod(x, y, lodLevel)
 #endif
@@ -45,32 +45,32 @@ float lodLevel = textureQueryLod(base, baseUV).x;
 
 //--//
 
-#ifdef PM_DEPTH_WRITE
+#ifdef POM_DEPTH_WRITE
 float delinearizeDepth(float depth) {
 	return ((depth * gbufferProjection[2].z + gbufferProjection[3].z) / (depth * gbufferProjection[2].w + gbufferProjection[3].w)) * 0.5 + 0.5;
 }
 #endif
 
 vec3 calculateParallaxCoord(vec2 coord, vec3 dir) {
-	#ifdef PM
-		#ifdef PM_DEPTH_WRITE
+	#ifdef POM
+		#ifdef POM_DEPTH_WRITE
 		gl_FragDepth = gl_FragCoord.z;
 		#endif
 
 	vec2 atlasTiles = textureSize(base, 0) / TEXTURE_RESOLUTION;
 	vec4 tcoord = vec4(fract(coord * atlasTiles), floor(coord * atlasTiles));
 
-	vec3 increment = (2.0 / PM_STEPS) * vec3(PM_DEPTH, PM_DEPTH, 1.0) * (dir / -dir.z);
+	vec3 increment = (2.0 / POM_STEPS) * vec3(POM_DEPTH, POM_DEPTH, 1.0) * (dir / -dir.z);
 	float foundHeight = texture(normals, coord).a;
 	vec3 offset = vec3(0.0, 0.0, 1.0);
 
-	for (int i = 0; i < PM_STEPS && foundHeight < offset.z; i++) {
+	for (int i = 0; i < POM_STEPS && foundHeight < offset.z; i++) {
 		offset += increment * pow(offset.z - foundHeight, 0.8);
 		foundHeight = texture(normals, (fract(tcoord.xy + offset.xy) + tcoord.zw) / atlasTiles).a;
 	}
 
-	#ifdef PM_DEPTH_WRITE
-	gl_FragDepth = delinearizeDepth(positionView.z + (normalize(positionView).z * length(vec3(offset.xy, offset.z * PM_DEPTH - PM_DEPTH))));
+	#ifdef POM_DEPTH_WRITE
+	gl_FragDepth = delinearizeDepth(positionView.z + (normalize(positionView).z * length(vec3(offset.xy, offset.z * POM_DEPTH - POM_DEPTH))));
 	#endif
 
 	return vec3((fract(tcoord.xy + offset.xy) + tcoord.zw) / atlasTiles, offset.z);
@@ -87,7 +87,7 @@ float calculateParallaxSelfShadow(vec3 coord, vec3 dir) {
 
 	vec4 tcoord = vec4(fract(coord.xy * atlasTiles), floor(coord.xy * atlasTiles));
 
-	vec3 increment = vec3(PM_DEPTH, PM_DEPTH, 1.0) * (dir / dir.z) / PSS_STEPS;
+	vec3 increment = vec3(POM_DEPTH, POM_DEPTH, 1.0) * (dir / dir.z) / PSS_STEPS;
 	vec3 offset = vec3(0.0, 0.0, coord.z);
 
 	for (int i = 0; i < PSS_STEPS && offset.z < 1.0; i++) {

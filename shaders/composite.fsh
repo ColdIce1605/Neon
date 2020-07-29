@@ -22,12 +22,13 @@ const float shadowDistance      = 16.0; // [16.0 32.0]
 /*
 const int colortex0Format = RG32F;   // Material
 const int colortex1Format = RGB32F;  // Normals, lightmap
-const int colortex2Format = RGBA32F; // Transparent surfaces
+const int colortex2Format = RGBA16F; // Transparent surfaces
 const int colortex3Format = RGBA32F; // Water data
 const int colortex4Format = RGB32F;  // Current render
 const int colortex5Format = RGBA32F;  // Data sent to next pass
+const int colortex6Format = RGBA16F;  //Temporal Data
 
-const int colortex7Format = RGB32F; // Sky
+const int colortex7Format = RGB16F; // Sky
 */
 
 const bool shadowHardwareFiltering1 = true;
