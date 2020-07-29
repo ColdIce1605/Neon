@@ -56,7 +56,6 @@ vec3 calculateParallaxCoord(vec2 coord, vec3 dir) {
 		#ifdef PM_DEPTH_WRITE
 		gl_FragDepth = gl_FragCoord.z;
 		#endif
-		return vec3(coord, 1.0);
 
 	vec2 atlasTiles = textureSize(base, 0) / TEXTURE_RESOLUTION;
 	vec4 tcoord = vec4(fract(coord * atlasTiles), floor(coord * atlasTiles));
