@@ -44,6 +44,7 @@ const bool shadowcolor1Mipmap = true;
 
 layout (location = 0) out vec3 composite;
 layout (location = 1) out vec3 gi;
+layout (location = 2) out vec3 sky;
 
 //--// Inputs //-----------------------------------------------------------------------------------------//
 
@@ -191,6 +192,7 @@ void main() {
 	//gi = vec3(0.0);
 
 	composite = texture(colortex4, fragCoord).rgb; // Stars, sun, moon
+	sky = vec3(1.0);
 
 	debugExit();
 }
