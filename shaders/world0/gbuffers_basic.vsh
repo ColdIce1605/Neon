@@ -1,5 +1,9 @@
 #version 420 compatibility
 
+//--// Configuration //----------------------------------------------------------------------------------//
+
+#define vsh
+
 //--// Outputs //----------------------------------------------------------------------------------------//
 
 out vec4 color;
@@ -9,16 +13,6 @@ out vec4 color;
 layout (location = 0) in vec4 vertexPosition;
 layout (location = 3) in vec4 vertexColor;
 
-//--// Uniforms //---------------------------------------------------------------------------------------//
+//--// Program //----------------------------------------------------------------------------------------//
 
-//uniform mat4 gbufferProjection;
-
-//--// Functions //--------------------------------------------------------------------------------------//
-
-#include "/lib/gbuffers/initPosition.vsh"
-
-void main() {
-	gl_Position = gl_ProjectionMatrix * initPosition();
-
-	color = vertexColor;
-}
+#include "/programs/gbuffers/basic.glsl"
