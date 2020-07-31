@@ -1,5 +1,9 @@
 #version 420 compatibility
 
+//--// Configuration //----------------------------------------------------------------------------------//
+
+#define vsh
+
 //--// Outputs //----------------------------------------------------------------------------------------//
 
 out mat3 tbnMatrix;
@@ -15,29 +19,6 @@ layout (location = 8)  in vec2 vertexUV;
 layout (location = 9)  in vec2 vertexLightmap;
 layout (location = 12) in vec4 vertexTangent;
 
-//--// Uniforms //---------------------------------------------------------------------------------------//
+//--// Program //----------------------------------------------------------------------------------------//
 
-uniform mat4 gbufferProjection;
-
-//--// Functions //--------------------------------------------------------------------------------------//
-
-#include "/lib/gbuffers/initPosition.vsh"
-
-mat3 calculateTBN() {
-	vec3 tangent = normalize(vertexTangent.xyz);
-
-	return mat3(
-		gl_NormalMatrix * tangent,
-		gl_NormalMatrix * cross(tangent, vertexNormal) * sign(vertexTangent.w),
-		gl_NormalMatrix * vertexNormal
-	);
-}
-
-void main() {
-	gl_Position = gbufferProjection * initPosition();
-
-	tbnMatrix = calculateTBN();
-	tint      = vertexColor;
-	baseUV    = vertexUV;
-	lmUV      = vertexLightmap / 240.0;
-}
+#include "/programs/gbuffers/hand.glsl"
