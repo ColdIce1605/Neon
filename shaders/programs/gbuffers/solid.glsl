@@ -108,7 +108,7 @@ void main() {
 	#endif
 	
 	vec4 spec = texture(specular, pCoord.st);
-	vec4 emis = vec4(0.0);
+	vec4 emis = vec4(0.0, spec.a, 0.0, 1.0);
 
 	//--//
 
