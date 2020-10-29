@@ -1,0 +1,1 @@
+#define EXPOSURE_BIAS 0.0
