@@ -51,5 +51,5 @@ vec3 GetLight(vec3 lpvPosition) {
 	vec3 lightLoZ = mix(lightLoYLoZ, lightHiYLoZ, lerp.y);
 	vec3 lightHiZ = mix(lightLoYHiZ, lightHiYHiZ, lerp.y);
 
-	return mix(lightLoZ, lightHiZ, lerp.z) + 0.2;//lightmap;
+	return mix(lightLoZ, lightHiZ, lerp.z) + 0.1;//lightmap;
 }

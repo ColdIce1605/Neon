@@ -5,6 +5,7 @@ float pack2x8(vec2 x) {
 	x.y = floor(255.0 * x.y + 0.5);
 	return dot(x, vec2(255.0 / 65535.0, 256.0 / 65535.0));
 } float pack2x8(float x, float y) { return pack2x8(vec2(x, y)); }
+
 float pack2x8Dithered(vec2 x, float pattern) {
 	// Dithered version of pack2x8, has to manually round the x component
 	x = floor(255.0 * x + pattern);

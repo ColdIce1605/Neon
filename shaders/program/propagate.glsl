@@ -1,5 +1,7 @@
 //--// Settings
 
+#include "/settings.glsl"
+
 //--// Uniforms
 
 uniform float viewWidth, viewHeight;
@@ -78,12 +80,16 @@ uniform sampler2D gaux3;
 		int id = int(floor(voxel[0].a * 255.0 + 0.5));
 
 		bool emissive =
-		id ==  89 ||
+		id == 11  ||
+		id == 50  ||
+		id == 51  ||
+		id == 89  ||
+		id == 90  ||
 		id == 124 ||
 		id == 138 ||
 		id == 169;
 
-		return emissive ? srgbToLinear(voxel[0].rgb) : vec3(0.0);
+		return emissive ? srgbToLinear(voxel[0].rgb * LightMultipler) : vec3(0.0);
 	}
 
 	vec3 calculateLPVPropagation(ivec3 lpvIndex) {
